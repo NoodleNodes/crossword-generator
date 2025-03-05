@@ -213,7 +213,7 @@
         }
         
         .crossword-cell.empty {
-            background-color: white;
+            background-color: black;
             border: none;
         }
         
@@ -406,6 +406,7 @@
                 display: flex;
                 flex-direction: column;
                 align-items: center;
+                justify-content: center;
             }
             
             .crossword-grid {
@@ -430,6 +431,8 @@
             
             .clues-container {
                 width: 100%;
+                max-width: 180mm;
+                margin: 30px auto 0 auto;
                 justify-content: center;
             }
         }
@@ -805,133 +808,4 @@ spider, an eight-legged bug that spins webs`;
             
             // Check if the word fits within the grid bounds
             if (horizontal) {
-                if (startX < 0 || startX + word.length > gridSize || startY < 0 || startY >= gridSize) {
-                    return false;
-                }
-            } else {
-                if (startX < 0 || startX >= gridSize || startY < 0 || startY + word.length > gridSize) {
-                    return false;
-                }
-            }
-            
-            // Check if the positions are valid
-            let hasIntersection = false;
-            
-            for (let i = 0; i < word.length; i++) {
-                let x = horizontal ? startX + i : startX;
-                let y = horizontal ? startY : startY + i;
-                
-                // Check the cell itself
-                if (grid[y][x] !== null && grid[y][x] !== word[i]) {
-                    return false;
-                }
-                
-                if (grid[y][x] === word[i]) {
-                    hasIntersection = true;
-                } else {
-                    // Check adjacent cells (above, below, left, right)
-                    // We don't want words to be adjacent to each other without intersecting
-                    
-                    // For horizontal words, check above and below
-                    if (horizontal) {
-                        // Check cell above
-                        if (y > 0 && grid[y-1][x] !== null) {
-                            return false;
-                        }
-                        
-                        // Check cell below
-                        if (y < gridSize - 1 && grid[y+1][x] !== null) {
-                            return false;
-                        }
-                        
-                        // Check cell before the start (left)
-                        if (i === 0 && x > 0 && grid[y][x-1] !== null) {
-                            return false;
-                        }
-                        
-                        // Check cell after the end (right)
-                        if (i === word.length - 1 && x < gridSize - 1 && grid[y][x+1] !== null) {
-                            return false;
-                        }
-                    }
-                    // For vertical words, check left and right
-                    else {
-                        // Check cell to the left
-                        if (x > 0 && grid[y][x-1] !== null) {
-                            return false;
-                        }
-                        
-                        // Check cell to the right
-                        if (x < gridSize - 1 && grid[y][x+1] !== null) {
-                            return false;
-                        }
-                        
-                        // Check cell before the start (above)
-                        if (i === 0 && y > 0 && grid[y-1][x] !== null) {
-                            return false;
-                        }
-                        
-                        // Check cell after the end (below)
-                        if (i === word.length - 1 && y < gridSize - 1 && grid[y+1][x] !== null) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            
-            // Word must have at least one intersection with existing words
-            return hasIntersection || startX === Math.floor((gridSize - word.length) / 2) && startY === Math.floor(gridSize / 2);
-        }
-        
-        function placeWordOnGrid(grid, word, startX, startY, horizontal) {
-            for (let i = 0; i < word.length; i++) {
-                if (horizontal) {
-                    grid[startY][startX + i] = word[i];
-                } else {
-                    grid[startY + i][startX] = word[i];
-                }
-            }
-        }
-        
-        function trimGrid(grid) {
-            const size = grid.length;
-            let minX = size;
-            let maxX = 0;
-            let minY = size;
-            let maxY = 0;
-            
-            // Find the boundaries of the filled cells
-            for (let y = 0; y < size; y++) {
-                for (let x = 0; x < size; x++) {
-                    if (grid[y][x] !== null) {
-                        minX = Math.min(minX, x);
-                        maxX = Math.max(maxX, x);
-                        minY = Math.min(minY, y);
-                        maxY = Math.max(maxY, y);
-                    }
-                }
-            }
-            
-            // Add padding
-            minX = Math.max(0, minX - 1);
-            minY = Math.max(0, minY - 1);
-            maxX = Math.min(size - 1, maxX + 1);
-            maxY = Math.min(size - 1, maxY + 1);
-            
-            // Create the new trimmed grid
-            const newWidth = maxX - minX + 1;
-            const newHeight = maxY - minY + 1;
-            const trimmedGrid = [];
-            
-            for (let y = 0; y < newHeight; y++) {
-                trimmedGrid[y] = [];
-                for (let x = 0; x < newWidth; x++) {
-                    trimmedGrid[y][x] = grid[y + minY][x + minX];
-                }
-            }
-            
-            return {
-                grid: trimmedGrid,
-                trimFromLeft: minX,
-                trimFromTop: minY
-            };
+                if (startX < 0 || startX + word.length > gridSize || startY < 0
