@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Crossword Puzzle Generator</title>
+
   <style>
     :root {
       --primary-color: #00BCD4;
@@ -125,41 +126,6 @@
       font-size: 20px;
       font-weight: bold;
     }
-    .download-section {
-      margin-top: 20px;
-    }
-    .download-btn {
-      background-color: var(--secondary-color);
-      color: white;
-      border: none;
-      border-radius: 4px;
-      padding: 10px 15px;
-      cursor: pointer;
-      margin: 5px;
-      display: block;
-      width: 100%;
-      text-align: center;
-      font-size: 14px;
-    }
-    .download-btn:hover {
-      background-color: #005F6B;
-    }
-    .scramble-btn {
-      background-color: #f1f1f1;
-      border: 1px solid #ddd;
-      color: #666;
-      border-radius: 50px;
-      padding: 8px 15px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-    .scramble-btn svg {
-      margin-right: 5px;
-    }
     .notification {
       position: fixed;
       top: 20px;
@@ -199,44 +165,6 @@
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
-    }
-
-    /* ---------- "Page preview" container, sized like A4 ---------- */
-    .page-preview {
-      /* Approx. A4 at 96 dpi: 794px x 1123px */
-      width: 794px;
-      height: 1123px;
-      border: 1px solid #ccc;
-      margin: 0 auto;
-      position: relative;
-      overflow: hidden;
-      box-shadow: 0 0 4px rgba(0,0,0,0.2);
-    }
-    /* Wrapper we can scale if puzzle is too large */
-    .page-scale-wrapper {
-      transform-origin: top left;
-      position: absolute;
-      left: 0;
-      top: 0;
-      width: auto;
-      height: auto;
-    }
-    
-    /* For PDF export - we'll hide this normally */
-    .pdf-export-container {
-      position: fixed;
-      left: -9999px;
-      top: -9999px;
-      visibility: hidden;
-    }
-    .pdf-export-container.active {
-      position: static;
-      visibility: visible;
-    }
-    /* Make sure everything stays together in the PDF */
-    .pdf-export-wrapper {
-      page-break-inside: avoid !important;
-      break-inside: avoid !important;
     }
 
     /* CROSSWORD LAYOUT */
@@ -298,23 +226,24 @@
       line-height: 1.4;
     }
 
-    /* PRINT STYLES */
+    /* PRINT STYLES:
+       Hide everything but #worksheetPreview or #answerKeyPreview 
+       (whichever is displayed at print time) */
     @media print {
       @page {
         size: A4;
         margin: 10mm;
       }
       body, html {
-        width: 100%;
-        height: 100%;
         margin: 0;
         padding: 0;
         font-size: 10pt;
       }
-      .container, .input-section, .tabs, .scramble-btn, header,
-      .create-btn, .preview-tabs, .download-section, .page-preview {
+      /* Hide main layout, input, etc. */
+      .container, .input-section, header, .tabs, .preview-tabs {
         display: none !important;
       }
+      /* The preview-section itself can remain, but we can remove any extraneous styling if desired */
       .preview-section {
         width: 100% !important;
         background: none;
@@ -322,50 +251,13 @@
         margin: 0;
         box-shadow: none;
       }
-      .pdf-export-container {
-        position: static !important;
-        visibility: visible !important;
-        transform: none !important;
-        width: 100% !important;
-        height: auto !important;
-      }
-      .pdf-export-container .crossword-grid-container {
-        margin-bottom: 5mm;
-      }
-      .pdf-export-container .crossword-cell {
-        width: 7mm;
-        height: 7mm;
-        border: 0.5pt solid black !important;
-        font-size: 12pt;
-      }
-      .pdf-export-container .cell-number {
-        font-size: 6pt;
-      }
-      .pdf-export-container .clues-container {
-        display: block !important;
-        column-count: 2;
-        column-gap: 5mm;
-        width: 100%;
-        margin-top: 5mm !important;
-        page-break-before: avoid !important;
-        page-break-inside: avoid !important;
-        break-inside: avoid !important;
-      }
-      
-      .pdf-export-container .across-clues,
-      .pdf-export-container .down-clues {
-        display: block !important;
-        break-inside: avoid !important;
-        page-break-inside: avoid !important;
-      }
-      .pdf-export-container .worksheet-heading {
-        font-size: 12pt;
-        margin-bottom: 4mm;
-      }
-      .pdf-export-container .preview-title {
-        font-size: 16pt;
-        margin-bottom: 8mm;
-      }
+      /* If you want a single page, no overflow, you can also do:
+         .preview-section { overflow: visible } */
+
+      /* Let the puzzle fill the page. We keep the same rules,
+         but can shrink cell size if needed. For a single-page puzzle:
+         .crossword-cell { width: 7mm; height: 7mm; } for example 
+      */
     }
   </style>
 </head>
@@ -375,6 +267,7 @@
       <h1>Crossword Puzzle</h1>
       <h2>Reading worksheet generator</h2>
     </header>
+
     <div class="content">
       <div class="input-section">
         <h3 class="section-title">Enter crossword puzzle content</h3>
@@ -396,69 +289,50 @@
 
       <div class="preview-section">
         <h3 class="section-title">Preview Worksheet</h3>
+        <!-- Switch between these two views with showPreviewTab() -->
         <div class="preview-tabs">
           <button class="preview-tab active" onclick="showPreviewTab('worksheet')">WORKSHEET</button>
           <button class="preview-tab" onclick="showPreviewTab('answerKey')">ANSWER KEY</button>
         </div>
         
-        <!-- The "page preview" that mimics A4 size -->
-        <div class="page-preview">
-          <!-- We'll scale the puzzle inside here if it's too large -->
-          <div class="page-scale-wrapper" id="pageScaleWrapper">
-            <div id="previewContent" class="preview-content">
-              <div id="worksheetPreview">
-                <h3 class="preview-title" id="previewTitle">Crossword Puzzle</h3>
-                <div id="crosswordContainer">
-                  <p>Your puzzle will appear here after you create it.</p>
-                </div>
-              </div>
-              <div id="answerKeyPreview" style="display: none;">
-                <h3 class="preview-title" id="answerKeyTitle">Crossword Puzzle</h3>
-                <div id="answerKeyContainer">
-                  <p>Your answer key will appear here after you create it.</p>
-                </div>
-              </div>
+        <div id="previewContent" class="preview-content">
+          <div id="worksheetPreview">
+            <h3 class="preview-title" id="previewTitle">Crossword Puzzle</h3>
+            <div id="crosswordContainer">
+              <p>Your puzzle will appear here after you create it.</p>
+            </div>
+          </div>
+          
+          <div id="answerKeyPreview" style="display: none;">
+            <h3 class="preview-title" id="answerKeyTitle">Crossword Puzzle</h3>
+            <div id="answerKeyContainer">
+              <p>Your answer key will appear here after you create it.</p>
             </div>
           </div>
         </div>
-        
-        <button class="scramble-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4
-                     A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4
-                     A2 2 0 0 0 21 16z"></path>
-            <path d="M12 22.5v-5.5m0 0l12-7m-24 0l12 7"></path>
-          </svg>
-          Scramble
+
+        <!-- Simple print approach (no html2pdf). We rely on "Save as PDF" in the print dialog. -->
+        <button class="create-btn" style="float:none; margin-right:10px;" onclick="printWorksheet()">
+          Print Worksheet
         </button>
-        
-        <div class="download-section">
-          <button class="download-btn" onclick="printPuzzle()">Download Worksheet</button>
-          <button class="download-btn" onclick="printAnswerKey()">Download Answer Key</button>
-        </div>
+        <button class="create-btn" style="float:none;" onclick="printAnswerKey()">
+          Print Answer Key
+        </button>
       </div>
     </div>
   </div>
-
-  <!-- Hidden containers for PDF export (no scaling applied) -->
-  <div id="pdfWorksheetContainer" class="pdf-export-container"></div>
-  <div id="pdfAnswerKeyContainer" class="pdf-export-container"></div>
 
   <div class="notification" id="notification">Notification message</div>
   <div class="loading-overlay" id="loadingOverlay">
     <div class="spinner"></div>
   </div>
 
-  <!-- html2pdf -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script>
-    // Global variables
+    // ======== Original puzzle logic remains ========
+
     let generatedPuzzle = null;
     let currentPreviewTab = 'worksheet';
-    
-    // Example placeholder
+
     window.onload = function() {
       const wordsList = document.getElementById('wordsList');
       if (!wordsList.value) {
@@ -481,8 +355,6 @@ to survive, to continue to live after a dangerous situation`;
       }
       document.querySelector(`.preview-tab[onclick="showPreviewTab('${tabName}')"]`)
               .classList.add("active");
-
-      // Show/hide the correct preview
       if (tabName === 'worksheet') {
         document.getElementById('worksheetPreview').style.display = 'block';
         document.getElementById('answerKeyPreview').style.display = 'none';
@@ -490,9 +362,8 @@ to survive, to continue to live after a dangerous situation`;
         document.getElementById('worksheetPreview').style.display = 'none';
         document.getElementById('answerKeyPreview').style.display = 'block';
       }
-      updatePreviewScale();
     }
-    
+
     function showNotification(message) {
       const notification = document.getElementById("notification");
       notification.textContent = message;
@@ -501,47 +372,25 @@ to survive, to continue to live after a dangerous situation`;
         notification.classList.remove("show");
       }, 3000);
     }
-    
+
     function showLoading(show) {
       document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
     }
-    
-    // Scale the puzzle to fit within .page-preview
-    function updatePreviewScale() {
-      const previewWrapper = document.querySelector('.page-preview');
-      const scaleWrapper = document.getElementById('pageScaleWrapper');
-      // reset scale so we measure "actual" size
-      scaleWrapper.style.transform = 'scale(1)';
 
-      const maxW = previewWrapper.clientWidth;
-      const maxH = previewWrapper.clientHeight;
-      const contentW = scaleWrapper.scrollWidth;
-      const contentH = scaleWrapper.scrollHeight;
-
-      let scale = 1;
-      if (contentW && contentH) {
-        const scaleW = maxW / contentW;
-        const scaleH = maxH / contentH;
-        scale = Math.min(scaleW, scaleH, 1);
-      }
-      scaleWrapper.style.transform = `scale(${scale})`;
-    }
-
-    // Parse user input
     function parseWordsInput() {
       const wordsText = document.getElementById('wordsList').value.trim();
       const lines = wordsText.split('\n');
       const words = [];
+      
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
-
+        
         const firstCommaIndex = line.indexOf(',');
         if (firstCommaIndex === -1) {
           showNotification("Line " + (i + 1) + " is missing a definition. Format: term, definition");
           return null;
         }
-
         const term = line.substring(0, firstCommaIndex).trim().toUpperCase();
         const definition = line.substring(firstCommaIndex + 1).trim();
         const cleanTerm = term.replace(/[^A-Z]/g, "");
@@ -562,7 +411,6 @@ to survive, to continue to live after a dangerous situation`;
       return words;
     }
 
-    // Generate puzzle
     function generateCrossword() {
       showLoading(true);
       setTimeout(() => {
@@ -578,15 +426,15 @@ to survive, to continue to live after a dangerous situation`;
 
           try {
             generatedPuzzle = createCrosswordGrid(words);
-            renderCrossword(generatedPuzzle, false); // Worksheet
-            renderCrossword(generatedPuzzle, true);  // Answer Key
+            renderCrossword(generatedPuzzle, false);
+            renderCrossword(generatedPuzzle, true);
             showPreviewTab('worksheet');
-          } catch (err) {
-            console.error(err);
+          } catch (error) {
+            console.error(error);
             showNotification("Error generating crossword. Try different terms.");
           }
-        } catch (err) {
-          console.error(err);
+        } catch (error) {
+          console.error(error);
           showNotification("Error processing input. Check format.");
         } finally {
           showLoading(false);
@@ -595,13 +443,11 @@ to survive, to continue to live after a dangerous situation`;
     }
 
     function createCrosswordGrid(words) {
-      // Sort words by length descending
       words.sort((a, b) => b.word.length - a.word.length);
       const gridSize = calculateGridSize(words);
       const grid = createEmptyGrid(gridSize);
       const placedWords = [];
 
-      // Place first word in the middle horizontally
       const firstWord = words[0];
       const startX = Math.floor((gridSize - firstWord.word.length) / 2);
       const startY = Math.floor(gridSize / 2);
@@ -614,14 +460,14 @@ to survive, to continue to live after a dangerous situation`;
         horizontal: true
       });
 
-      // Attempt to place remaining
       for (let i = 1; i < words.length; i++) {
         const currentWord = words[i];
         let placed = false;
-
+        
         for (let j = 0; j < placedWords.length && !placed; j++) {
           const placedWord = placedWords[j];
-          // horizontal intersection
+          
+          // Try horizontal intersection
           if (!placedWord.horizontal) {
             for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
               for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
@@ -643,7 +489,8 @@ to survive, to continue to live after a dangerous situation`;
               }
             }
           }
-          // vertical intersection
+
+          // Try vertical intersection
           if (placedWord.horizontal && !placed) {
             for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
               for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
@@ -667,15 +514,15 @@ to survive, to continue to live after a dangerous situation`;
           }
         }
       }
-      // Trim
-      const trimmed = trimGrid(grid);
-      const adjustX = trimmed.trimFromLeft;
-      const adjustY = trimmed.trimFromTop;
+
+      const trimmedGrid = trimGrid(grid);
+      const adjustX = trimmedGrid.trimFromLeft;
+      const adjustY = trimmedGrid.trimFromTop;
       for (let pw of placedWords) {
         pw.startX -= adjustX;
         pw.startY -= adjustY;
       }
-      numberGrid(trimmed.grid, placedWords);
+      numberGrid(trimmedGrid.grid, placedWords);
 
       const acrossClues = [];
       const downClues = [];
@@ -690,7 +537,7 @@ to survive, to continue to live after a dangerous situation`;
       downClues.sort((a, b) => a.number - b.number);
 
       return {
-        grid: trimmed.grid,
+        grid: trimmedGrid.grid,
         placedWords: placedWords,
         acrossClues,
         downClues
@@ -702,7 +549,6 @@ to survive, to continue to live after a dangerous situation`;
       for (let w of words) {
         maxLength = Math.max(maxLength, w.word.length);
       }
-      // some padding
       return Math.max(20, maxLength + 10);
     }
 
@@ -739,9 +585,9 @@ to survive, to continue to live after a dangerous situation`;
           hasIntersection = true;
         }
       }
-      // must intersect or be first word
-      return hasIntersection || (startX === Math.floor((gridSize - word.length) / 2)
-             && startY === Math.floor(gridSize / 2));
+      return hasIntersection || 
+        (startX === Math.floor((gridSize - word.length) / 2) &&
+         startY === Math.floor(gridSize / 2));
     }
 
     function placeWordOnGrid(grid, word, startX, startY, horizontal) {
@@ -808,7 +654,6 @@ to survive, to continue to live after a dangerous situation`;
               numberV = true;
             }
             if (numberH || numberV) {
-              // Assign the number to matching words
               if (numberH) {
                 for (let pw of placedWords) {
                   if (pw.horizontal && pw.startX === x && pw.startY === y) {
@@ -828,7 +673,7 @@ to survive, to continue to live after a dangerous situation`;
           }
         }
       }
-      // If any words have no number, assign one
+      // If any words have no number, assign it
       for (let pw of placedWords) {
         if (pw.number === undefined) {
           pw.number = currentNumber++;
@@ -840,9 +685,9 @@ to survive, to continue to live after a dangerous situation`;
       const grid = puzzle.grid;
       const height = grid.length;
       const width = grid[0].length;
-      
-      // Cell size
       const maxDim = Math.max(width, height);
+
+      // Slightly smaller cells if puzzle is big
       let cellSize = '25px';
       if (maxDim > 15) { cellSize = '22px'; }
       else if (maxDim > 12) { cellSize = '24px'; }
@@ -892,45 +737,23 @@ to survive, to continue to live after a dangerous situation`;
       }
       html += '</div>';
 
-      // Update both the preview and PDF export containers
       if (showAnswers) {
         document.getElementById('answerKeyContainer').innerHTML = html;
-        
-        // For PDF export - full unscaled version
-        document.getElementById('pdfAnswerKeyContainer').innerHTML = 
-          `<div class="preview-content">
-            <div class="pdf-export-wrapper">
-              <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
-              ${html}
-            </div>
-          </div>`;
       } else {
         document.getElementById('crosswordContainer').innerHTML = html;
-        
-        // For PDF export - full unscaled version
-        document.getElementById('pdfWorksheetContainer').innerHTML = 
-          `<div class="preview-content">
-            <div class="pdf-export-wrapper">
-              <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
-              ${html}
-            </div>
-          </div>`;
       }
-      
-      updatePreviewScale(); // <-- scale preview each time
     }
 
     function isStartOfWord(grid, x, y) {
       if (grid[y][x] === null) return false;
-      const height = grid.length;
       const width = grid[0].length;
+      const height = grid.length;
       const horizStart = ((x === 0 || grid[y][x-1] === null)
-                          && (x < width - 1 && grid[y][x+1] !== null));
+                        && (x < width - 1 && grid[y][x+1] !== null));
       const vertStart = ((y === 0 || grid[y-1][x] === null)
-                          && (y < height - 1 && grid[y+1][x] !== null));
+                        && (y < height - 1 && grid[y+1][x] !== null));
       return horizStart || vertStart;
     }
-
     function getWordNumber(placedWords, x, y) {
       for (let pw of placedWords) {
         if (pw.startX === x && pw.startY === y) {
@@ -940,142 +763,18 @@ to survive, to continue to live after a dangerous situation`;
       return null;
     }
 
-    // PDF export
-    function printPuzzle() {
-      if (!generatedPuzzle) {
-        showNotification("Generate a puzzle first");
-        return;
-      }
-      
-      const puzzleTitle = (document.getElementById('puzzleTitle').value || "Crossword_Puzzle")
-                          .replace(/\s+/g, '_');
-      const filename = puzzleTitle + '.pdf';
-      
-      // Use the unscaled version for PDF export
-      const content = document.getElementById('pdfWorksheetContainer');
-      content.classList.add('active'); // Make it visible for html2pdf
-      
-      const options = {
-        margin: [10, 10, 10, 10],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          scrollY: 0,
-          windowHeight: 2000, // Ensure there's enough height to capture everything
-          onclone: function(doc) {
-            // Force visibility of clues in PDF
-            const cluesContainer = doc.querySelector('.pdf-export-container .clues-container');
-            if (cluesContainer) {
-              cluesContainer.style.display = 'block';
-              cluesContainer.style.visibility = 'visible';
-              cluesContainer.style.position = 'static';
-              cluesContainer.style.overflow = 'visible';
-              cluesContainer.style.height = 'auto';
-            }
-          }
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: { mode: ['avoid', 'css', 'legacy'], avoid: '.pdf-export-wrapper' }
-      };
-      
-      showLoading(true);
-      
-      html2pdf()
-        .set(options)
-        .from(content)
-        .save()
-        .then(() => {
-          content.classList.remove('active');
-          showLoading(false);
-          showNotification("Worksheet downloaded successfully");
-        })
-        .catch(err => {
-          content.classList.remove('active');
-          showLoading(false);
-          console.error("PDF generation error:", err);
-          showNotification("Error downloading PDF. Try again.");
-        });
+    // ======== Simple Print Approach ========
+    function printWorksheet() {
+      // Show the worksheet tab so it's visible
+      showPreviewTab('worksheet');
+      // Let the browser's print dialog handle it. The user can choose "Save as PDF."
+      window.print();
     }
 
     function printAnswerKey() {
-      if (!generatedPuzzle) {
-        showNotification("Generate a puzzle first");
-        return;
-      }
-      
-      const puzzleTitle = (document.getElementById('puzzleTitle').value || "Crossword_Puzzle")
-                          .replace(/\s+/g, '_');
-      const filename = puzzleTitle + '_Answer_Key.pdf';
-      
-      // Use the unscaled version for PDF export
-      const content = document.getElementById('pdfAnswerKeyContainer');
-      content.classList.add('active'); // Make it visible for html2pdf
-      
-      // Ensure all content is visible
-      const cluesContainer = content.querySelector('.clues-container');
-      if (cluesContainer) {
-        cluesContainer.style.display = 'block';
-        cluesContainer.style.visibility = 'visible';
-        cluesContainer.style.height = 'auto';
-      }
-      
-      const options = {
-        margin: [10, 10, 10, 10],
-        filename: filename,
-        image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          scrollY: 0,
-          windowHeight: 2000, // Ensure there's enough height to capture everything
-          onclone: function(doc) {
-            // Force visibility of clues in PDF
-            const cluesContainer = doc.querySelector('.pdf-export-container .clues-container');
-            if (cluesContainer) {
-              cluesContainer.style.display = 'block';
-              cluesContainer.style.visibility = 'visible';
-              cluesContainer.style.position = 'static';
-              cluesContainer.style.overflow = 'visible';
-              cluesContainer.style.height = 'auto';
-            }
-          }
-        },
-        jsPDF: {
-          unit: 'mm',
-          format: 'a4',
-          orientation: 'portrait',
-          compress: true
-        },
-        pagebreak: { mode: ['avoid', 'css', 'legacy'], avoid: '.pdf-export-wrapper' }
-      };
-      
-      showLoading(true);
-      
-      // Add a slight delay to ensure DOM is fully rendered
-      setTimeout(() => {
-        html2pdf()
-          .set(options)
-          .from(content)
-          .save()
-          .then(() => {
-            content.classList.remove('active');
-            showLoading(false);
-            showNotification("Answer key downloaded successfully");
-          })
-          .catch(err => {
-            content.classList.remove('active');
-            showLoading(false);
-            console.error("PDF generation error:", err);
-            showNotification("Error downloading PDF. Try again.");
-          });
-      }, 100);
+      // Show the answer key tab
+      showPreviewTab('answerKey');
+      window.print();
     }
   </script>
 </body>
