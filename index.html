@@ -233,6 +233,11 @@
       position: static;
       visibility: visible;
     }
+    /* Make sure everything stays together in the PDF */
+    .pdf-export-wrapper {
+      page-break-inside: avoid !important;
+      break-inside: avoid !important;
+    }
 
     /* CROSSWORD LAYOUT */
     .crossword-grid-container {
@@ -337,9 +342,21 @@
         font-size: 6pt;
       }
       .pdf-export-container .clues-container {
+        display: block !important;
         column-count: 2;
-        column-gap: 8mm;
+        column-gap: 5mm;
         width: 100%;
+        margin-top: 5mm !important;
+        page-break-before: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+      }
+      
+      .pdf-export-container .across-clues,
+      .pdf-export-container .down-clues {
+        display: block !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
       .pdf-export-container .worksheet-heading {
         font-size: 12pt;
@@ -882,8 +899,10 @@ to survive, to continue to live after a dangerous situation`;
         // For PDF export - full unscaled version
         document.getElementById('pdfAnswerKeyContainer').innerHTML = 
           `<div class="preview-content">
-            <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
-            ${html}
+            <div class="pdf-export-wrapper">
+              <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
+              ${html}
+            </div>
           </div>`;
       } else {
         document.getElementById('crosswordContainer').innerHTML = html;
@@ -891,8 +910,10 @@ to survive, to continue to live after a dangerous situation`;
         // For PDF export - full unscaled version
         document.getElementById('pdfWorksheetContainer').innerHTML = 
           `<div class="preview-content">
-            <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
-            ${html}
+            <div class="pdf-export-wrapper">
+              <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
+              ${html}
+            </div>
           </div>`;
       }
       
@@ -940,14 +961,28 @@ to survive, to continue to live after a dangerous situation`;
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
-          useCORS: true
+          useCORS: true,
+          scrollY: 0,
+          windowHeight: 2000, // Ensure there's enough height to capture everything
+          onclone: function(doc) {
+            // Force visibility of clues in PDF
+            const cluesContainer = doc.querySelector('.pdf-export-container .clues-container');
+            if (cluesContainer) {
+              cluesContainer.style.display = 'block';
+              cluesContainer.style.visibility = 'visible';
+              cluesContainer.style.position = 'static';
+              cluesContainer.style.overflow = 'visible';
+              cluesContainer.style.height = 'auto';
+            }
+          }
         },
         jsPDF: {
           unit: 'mm',
           format: 'a4',
           orientation: 'portrait',
           compress: true
-        }
+        },
+        pagebreak: { mode: ['avoid', 'css', 'legacy'], avoid: '.pdf-export-wrapper' }
       };
       
       showLoading(true);
@@ -983,39 +1018,64 @@ to survive, to continue to live after a dangerous situation`;
       const content = document.getElementById('pdfAnswerKeyContainer');
       content.classList.add('active'); // Make it visible for html2pdf
       
+      // Ensure all content is visible
+      const cluesContainer = content.querySelector('.clues-container');
+      if (cluesContainer) {
+        cluesContainer.style.display = 'block';
+        cluesContainer.style.visibility = 'visible';
+        cluesContainer.style.height = 'auto';
+      }
+      
       const options = {
         margin: [10, 10, 10, 10],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
-          useCORS: true
+          useCORS: true,
+          scrollY: 0,
+          windowHeight: 2000, // Ensure there's enough height to capture everything
+          onclone: function(doc) {
+            // Force visibility of clues in PDF
+            const cluesContainer = doc.querySelector('.pdf-export-container .clues-container');
+            if (cluesContainer) {
+              cluesContainer.style.display = 'block';
+              cluesContainer.style.visibility = 'visible';
+              cluesContainer.style.position = 'static';
+              cluesContainer.style.overflow = 'visible';
+              cluesContainer.style.height = 'auto';
+            }
+          }
         },
         jsPDF: {
           unit: 'mm',
           format: 'a4',
           orientation: 'portrait',
           compress: true
-        }
+        },
+        pagebreak: { mode: ['avoid', 'css', 'legacy'], avoid: '.pdf-export-wrapper' }
       };
       
       showLoading(true);
       
-      html2pdf()
-        .set(options)
-        .from(content)
-        .save()
-        .then(() => {
-          content.classList.remove('active');
-          showLoading(false);
-          showNotification("Answer key downloaded successfully");
-        })
-        .catch(err => {
-          content.classList.remove('active');
-          showLoading(false);
-          console.error("PDF generation error:", err);
-          showNotification("Error downloading PDF. Try again.");
-        });
+      // Add a slight delay to ensure DOM is fully rendered
+      setTimeout(() => {
+        html2pdf()
+          .set(options)
+          .from(content)
+          .save()
+          .then(() => {
+            content.classList.remove('active');
+            showLoading(false);
+            showNotification("Answer key downloaded successfully");
+          })
+          .catch(err => {
+            content.classList.remove('active');
+            showLoading(false);
+            console.error("PDF generation error:", err);
+            showNotification("Error downloading PDF. Try again.");
+          });
+      }, 100);
     }
   </script>
 </body>
