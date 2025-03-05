@@ -198,6 +198,12 @@
             padding: 0;
         }
         
+        .crossword-grid-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        
         .crossword-cell {
             width: 25px;
             height: 25px;
@@ -213,7 +219,7 @@
         }
         
         .crossword-cell.empty {
-            background-color: black;
+            background-color: white;
             border: none;
         }
         
@@ -245,6 +251,24 @@
         
         .download-btn:hover {
             background-color: #005F6B;
+        }
+        
+        .scramble-btn {
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            color: #666;
+            border-radius: 50px;
+            padding: 8px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .scramble-btn svg {
+            margin-right: 5px;
         }
         
         .save-section {
@@ -360,96 +384,114 @@
             transform: translateX(0);
         }
         
-     @media print {
-    body, html {
-        width: 210mm;
-        height: 297mm;
-        margin: 0;
-        padding: 0;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    .crossword-container, .clues-container {
-        page-break-inside: avoid;
-    }
-    
-    .input-section, .create-btn, header {
-        display: none !important;
-    }
-    
-    .container {
-        width: 100%;
-        max-width: none;
-        padding: 0;
-    }
-    
-    .content {
-        display: block;
-    }
-    
-    .preview-section {
-        width: 100%;
-        background: none;
-        padding: 0;
-        margin: 0;
-        box-shadow: none;
-    }
-    
-    .preview-tabs, .download-section, .scramble-btn {
-        display: none !important;
-    }
-    
-    .preview-content {
-        box-shadow: none;
-        padding: 10mm;
-        margin: 0 auto;
-        max-width: 100%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-    }
-    
-    .crossword-grid {
-        margin: 0 auto 15mm auto;
-        transform: scale(0.95); /* Slightly reduce size to ensure fit */
-    }
-    
-    .crossword-cell {
-        border: 1px solid black !important;
-    }
-    
-    .crossword-cell.empty {
-        background-color: black !important;
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-    }
-    
-    .clues-container {
-        column-count: 2; /* Two-column layout for clues */
-        column-gap: 10mm;
-        width: 100%;
-        margin-top: 5mm;
-    }
-    
-    .across-clues, .down-clues {
-        break-inside: avoid; /* Keep clue sections together */
-        margin-bottom: 5mm;
-    }
-}
+        /* PRINT STYLES - IMPROVED FOR A4 PAPER */
+        @media print {
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
             
-            /* Center content on the page */
+            body, html {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+                font-size: 12pt;
+            }
+            
+            .crossword-container, .clues-container {
+                page-break-inside: avoid;
+            }
+            
+            .input-section, .create-btn, header, .tabs {
+                display: none !important;
+            }
+            
+            .container {
+                width: 100%;
+                max-width: none;
+                padding: 0;
+                margin: 0;
+            }
+            
+            .content {
+                display: block;
+                width: 100%;
+            }
+            
+            .preview-section {
+                width: 100% !important;
+                background: none;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .preview-tabs, .download-section, .scramble-btn, .save-section {
+                display: none !important;
+            }
+            
+            .preview-content {
+                box-shadow: none;
+                padding: 0;
+                width: 100%;
+            }
+            
             .preview-title {
-                text-align: center;
-                margin: 0 0 20px 0;
+                font-size: 18pt;
+                margin-bottom: 12mm;
+            }
+            
+            .crossword-grid-container {
+                display: flex;
+                justify-content: center;
+                max-width: 100%;
+                margin: 0 auto 10mm auto;
+            }
+            
+            .crossword-grid {
+                max-width: 90%;
+                margin: 0 auto 10mm auto;
+                transform-origin: center top;
+            }
+            
+            .crossword-cell {
+                width: 8mm;
+                height: 8mm;
+                border: 0.5pt solid black !important;
+                font-size: 14pt;
+            }
+            
+            .cell-number {
+                font-size: 6pt;
+                top: 1pt;
+                left: 1pt;
+            }
+            
+            .crossword-cell.empty {
+                background-color: #fff;
+                border: none !important;
             }
             
             .clues-container {
+                column-count: 2;
+                column-gap: 10mm;
                 width: 100%;
-                max-width: 180mm;
-                margin: 30px auto 0 auto;
-                justify-content: center;
+            }
+            
+            .across-clues, .down-clues {
+                break-inside: avoid;
+                margin-bottom: 8mm;
+            }
+            
+            .worksheet-heading {
+                font-size: 14pt;
+                margin-bottom: 5mm;
+            }
+            
+            .clue-item {
+                font-size: 10pt;
+                margin-bottom: 2mm;
             }
         }
     </style>
@@ -507,6 +549,14 @@
                     </div>
                 </div>
                 
+                <button class="scramble-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <path d="M12 22.5v-5.5m0 0l12-7m-24 0l12 7"></path>
+                    </svg>
+                    Scramble
+                </button>
+                
                 <div class="download-section">
                     <button class="download-btn" onclick="printPuzzle()">Download Worksheet</button>
                     <button class="download-btn" onclick="printAnswerKey()">Download Answer Key</button>
@@ -537,6 +587,9 @@ tiger, a big orange cat with black stripes
 spider, an eight-legged bug that spins webs`;
             }
         };
+        
+        // DOM functions
+        // Tab functionality removed as there's only one tab now
         
         function showPreviewTab(tabName) {
             currentPreviewTab = tabName;
@@ -742,6 +795,7 @@ spider, an eight-legged bug that spins webs`;
                 
                 // If word couldn't be placed, try again later
                 if (!placed) {
+                    // Instead of pushing all unplaced words, ensure we don't get stuck
                     // Only try a limited number of times
                     if (words.indexOf(currentWord) === i && words.length < 100) {
                         words.push(currentWord);
@@ -1026,102 +1080,20 @@ spider, an eight-legged bug that spins webs`;
             return grid;
         }
         
-        function isStartOfWord(grid, x, y) {
-            const height = grid.length;
-            const width = grid[0].length;
-            
-            // Check if this is a valid filled cell
-            if (grid[y][x] === null) {
-                return false;
-            }
-            
-            // Check if this is the start of a horizontal word
-            const isHorizontalStart = (x === 0 || grid[y][x-1] === null) && (x < width - 1 && grid[y][x+1] !== null);
-            
-            // Check if this is the start of a vertical word
-            const isVerticalStart = (y === 0 || grid[y-1][x] === null) && (y < height - 1 && grid[y+1][x] !== null);
-            
-            return isHorizontalStart || isVerticalStart;
-        }
-        
-        function getWordNumber(placedWords, x, y) {
-            for (let i = 0; i < placedWords.length; i++) {
-                const word = placedWords[i];
-                if (word.startX === x && word.startY === y) {
-                    return word.number;
-                }
-            }
-            return null;
-        }
-        
-        // NEW FUNCTION: Calculate cell size based on grid dimensions
-        function calculateCellSize(grid) {
-            const width = grid[0].length;
-            const height = grid.length;
-            
-            // Default size for small grids
-            let cellSize = 25;
-            
-            // Adjust cell size based on grid dimensions to fit on A4
-            if (width > 12 || height > 12) {
-                cellSize = 20;
-            }
-            if (width > 15 || height > 15) {
-                cellSize = 18;
-            }
-            if (width > 18 || height > 18) {
-                cellSize = 16;
-            }
-            if (width > 20 || height > 20) {
-                cellSize = 14;
-            }
-            
-            return cellSize;
-        }
-        
-        // UPDATED FUNCTION: Render crossword with dynamic cell sizing
+        // Rendering functions
         function renderCrossword(puzzle, showAnswers) {
             const grid = puzzle.grid;
             const height = grid.length;
             const width = grid[0].length;
             
-            // Calculate appropriate cell size
-            const cellSize = calculateCellSize(grid);
-            
-            // Add dynamic styling for this specific grid size
-            let dynamicStyle = document.getElementById('dynamic-crossword-style');
-            if (!dynamicStyle) {
-                dynamicStyle = document.createElement('style');
-                dynamicStyle.id = 'dynamic-crossword-style';
-                document.head.appendChild(dynamicStyle);
-            }
-            
-            // Set cell size and font size based on grid dimensions
-            dynamicStyle.innerHTML = `
-                .crossword-cell {
-                    width: ${cellSize}px;
-                    height: ${cellSize}px;
-                    font-size: ${Math.max(cellSize * 0.6, 10)}px;
-                }
-                .cell-number {
-                    font-size: ${Math.max(cellSize * 0.3, 6)}px;
-                }
-                @media print {
-                    .crossword-cell {
-                        width: ${cellSize * 0.75}mm !important;
-                        height: ${cellSize * 0.75}mm !important;
-                    }
-                }
-            `;
-            
-            let html = '<table class="crossword-grid">';
+            let html = '<div class="crossword-grid-container"><table class="crossword-grid">';
             
             for (let y = 0; y < height; y++) {
                 html += '<tr>';
                 
                 for (let x = 0; x < width; x++) {
                     if (grid[y][x] === null) {
-                        html += '<td class="crossword-cell empty"></td>';
+                        html += '<td></td>';
                     } else {
                         // Check if this cell should have a number
                         let cellNumber = '';
@@ -1136,14 +1108,14 @@ spider, an eight-legged bug that spins webs`;
                         // For answer key, show the letter. For worksheet, show empty cell
                         const cellContent = showAnswers ? grid[y][x] : '';
                         
-                        html += `<td class="crossword-cell filled">${cellNumber}${cellContent}</td>`;
+                        html += `<td class="crossword-cell">${cellNumber}${cellContent}</td>`;
                     }
                 }
                 
                 html += '</tr>';
             }
             
-            html += '</table>';
+            html += '</table></div>';
             
             // Add clues
             html += '<div class="clues-container">';
@@ -1186,7 +1158,35 @@ spider, an eight-legged bug that spins webs`;
             }
         }
         
-        // UPDATED FUNCTION: Improved PDF export
+        function isStartOfWord(grid, x, y) {
+            const height = grid.length;
+            const width = grid[0].length;
+            
+            // Check if this is a valid filled cell
+            if (grid[y][x] === null) {
+                return false;
+            }
+            
+            // Check if this is the start of a horizontal word
+            const isHorizontalStart = (x === 0 || grid[y][x-1] === null) && (x < width - 1 && grid[y][x+1] !== null);
+            
+            // Check if this is the start of a vertical word
+            const isVerticalStart = (y === 0 || grid[y-1][x] === null) && (y < height - 1 && grid[y+1][x] !== null);
+            
+            return isHorizontalStart || isVerticalStart;
+        }
+        
+        function getWordNumber(placedWords, x, y) {
+            for (let i = 0; i < placedWords.length; i++) {
+                const word = placedWords[i];
+                if (word.startX === x && word.startY === y) {
+                    return word.number;
+                }
+            }
+            return null;
+        }
+        
+        // Export functions
         function printPuzzle() {
             if (!generatedPuzzle) {
                 showNotification("Generate a puzzle first");
@@ -1200,22 +1200,14 @@ spider, an eight-legged bug that spins webs`;
             // Get the content to print
             const content = document.getElementById('worksheetPreview');
             
-            // PDF options optimized for A4
+            // PDF options - IMPROVED FOR A4 PAPER
             const options = {
                 margin: [15, 15, 15, 15],
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    letterRendering: true
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait'
-                },
-                pagebreak: { mode: ['avoid-all'] }
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
             
             showLoading(true);
@@ -1230,7 +1222,6 @@ spider, an eight-legged bug that spins webs`;
             });
         }
         
-        // UPDATED FUNCTION: Improved PDF export for answer key
         function printAnswerKey() {
             if (!generatedPuzzle) {
                 showNotification("Generate a puzzle first");
@@ -1244,22 +1235,14 @@ spider, an eight-legged bug that spins webs`;
             // Get the content to print
             const content = document.getElementById('answerKeyPreview');
             
-            // PDF options optimized for A4
+            // PDF options - IMPROVED FOR A4 PAPER
             const options = {
                 margin: [15, 15, 15, 15],
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { 
-                    scale: 2, 
-                    useCORS: true,
-                    letterRendering: true
-                },
-                jsPDF: { 
-                    unit: 'mm', 
-                    format: 'a4', 
-                    orientation: 'portrait'
-                },
-                pagebreak: { mode: ['avoid-all'] }
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
             };
             
             showLoading(true);
