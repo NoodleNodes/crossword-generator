@@ -230,7 +230,8 @@
         }
         
         .download-btn {
-            background-color: #eee;
+            background-color: var(--secondary-color);
+            color: white;
             border: none;
             border-radius: 4px;
             padding: 10px 15px;
@@ -243,7 +244,7 @@
         }
         
         .download-btn:hover {
-            background-color: #ddd;
+            background-color: #005F6B;
         }
         
         .scramble-btn {
@@ -428,15 +429,14 @@
             <h2>Reading worksheet generator</h2>
             
             <div class="tabs">
-                <button class="tab active" onclick="openTab('optionsTab')">Options</button>
-                <button class="tab" onclick="openTab('themeTab')">Theme</button>
+                <button class="tab active">Options</button>
             </div>
         </header>
 
         <div class="content">
             <div class="input-section">
                 <h3 class="section-title">Enter crossword puzzle content</h3>
-                <p class="help-text">See instructions below. Under 50 words is best. More help: <a href="#" class="help-link">help</a></p>
+                <p class="help-text">See instructions below. Under 20 words is best.</p>
                 
                 <div>
                     <label for="puzzleTitle">Title</label>
@@ -492,21 +492,7 @@
                     <button class="download-btn" onclick="printAnswerKey()">Download Answer Key</button>
                 </div>
                 
-                <div class="save-section">
-                    <p class="save-title">Save worksheet</p>
-                    <div class="save-row">
-                        <input type="text" class="save-input" id="saveFileName" value="Crossword Puzzle">
-                        <button class="save-btn">Save</button>
-                    </div>
-                    
-                    <p class="save-title">My saved worksheets</p>
-                    <div class="save-row">
-                        <select class="save-input">
-                            <option>...</option>
-                        </select>
-                        <button class="save-btn">Delete</button>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -535,17 +521,7 @@ spider, an eight-legged bug that spins webs`;
         };
         
         // DOM functions
-        function openTab(tabName) {
-            const tabs = document.getElementsByClassName("tab");
-            
-            for (let i = 0; i < tabs.length; i++) {
-                tabs[i].classList.remove("active");
-            }
-            
-            document.querySelector(`.tab[onclick="openTab('${tabName}')"]`).classList.add("active");
-            
-            // In a real implementation, we would show/hide tab content here
-        }
+        // Tab functionality removed as there's only one tab now
         
         function showPreviewTab(tabName) {
             currentPreviewTab = tabName;
@@ -629,33 +605,40 @@ spider, an eight-legged bug that spins webs`;
 
         // Crossword generation functions
         function generateCrossword() {
-            const words = parseWordsInput();
-            if (!words) return;
-            
-            const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword Puzzle";
-            
-            // Update preview titles
-            document.getElementById('previewTitle').textContent = puzzleTitle;
-            document.getElementById('answerKeyTitle').textContent = puzzleTitle;
-            document.getElementById('saveFileName').value = puzzleTitle;
-            
             showLoading(true);
             
-            // Use setTimeout to allow the loading screen to appear
+            // Use setTimeout to allow the loading screen to appear before processing
             setTimeout(() => {
                 try {
-                    // Create the crossword puzzle
-                    generatedPuzzle = createCrosswordGrid(words);
+                    const words = parseWordsInput();
+                    if (!words) {
+                        showLoading(false);
+                        return;
+                    }
                     
-                    // Render the puzzle and answer key
-                    renderCrossword(generatedPuzzle, false);
-                    renderCrossword(generatedPuzzle, true);
+                    const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword Puzzle";
                     
-                    // Show the worksheet tab by default
-                    showPreviewTab('worksheet');
+                    // Update preview titles
+                    document.getElementById('previewTitle').textContent = puzzleTitle;
+                    document.getElementById('answerKeyTitle').textContent = puzzleTitle;
+                    
+                    try {
+                        // Create the crossword puzzle
+                        generatedPuzzle = createCrosswordGrid(words);
+                        
+                        // Render the puzzle and answer key
+                        renderCrossword(generatedPuzzle, false);
+                        renderCrossword(generatedPuzzle, true);
+                        
+                        // Show the worksheet tab by default
+                        showPreviewTab('worksheet');
+                    } catch (error) {
+                        console.error(error);
+                        showNotification("Error generating crossword. Try different terms.");
+                    }
                 } catch (error) {
                     console.error(error);
-                    showNotification("Error generating crossword. Try different terms.");
+                    showNotification("Error processing input. Check your term format.");
                 } finally {
                     showLoading(false);
                 }
@@ -744,7 +727,11 @@ spider, an eight-legged bug that spins webs`;
                 
                 // If word couldn't be placed, try again later
                 if (!placed) {
-                    words.push(currentWord);
+                    // Instead of pushing all unplaced words, ensure we don't get stuck
+            // Only try a limited number of times
+            if (words.indexOf(currentWord) === i && words.length < 100) {
+                words.push(currentWord);
+            }
                 }
             }
             
@@ -1131,11 +1118,31 @@ spider, an eight-legged bug that spins webs`;
             }
             
             showPreviewTab('worksheet');
+            const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword_Puzzle";
+            const filename = puzzleTitle.replace(/\s+/g, '_') + '.pdf';
             
-            // Wait a bit for the tab to update
-            setTimeout(() => {
-                window.print();
-            }, 100);
+            // Get the content to print
+            const content = document.getElementById('worksheetPreview');
+            
+            // PDF options
+            const options = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            showLoading(true);
+            
+            html2pdf().set(options).from(content).save().then(() => {
+                showLoading(false);
+                showNotification("Worksheet downloaded successfully");
+            }).catch(error => {
+                showLoading(false);
+                console.error("PDF generation error:", error);
+                showNotification("Error downloading PDF. Try again.");
+            });
         }
         
         function printAnswerKey() {
@@ -1145,11 +1152,31 @@ spider, an eight-legged bug that spins webs`;
             }
             
             showPreviewTab('answerKey');
+            const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword_Puzzle";
+            const filename = puzzleTitle.replace(/\s+/g, '_') + '_Answer_Key.pdf';
             
-            // Wait a bit for the tab to update
-            setTimeout(() => {
-                window.print();
-            }, 100);
+            // Get the content to print
+            const content = document.getElementById('answerKeyPreview');
+            
+            // PDF options
+            const options = {
+                margin: 10,
+                filename: filename,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            showLoading(true);
+            
+            html2pdf().set(options).from(content).save().then(() => {
+                showLoading(false);
+                showNotification("Answer key downloaded successfully");
+            }).catch(error => {
+                showLoading(false);
+                console.error("PDF generation error:", error);
+                showNotification("Error downloading PDF. Try again.");
+            });
         }
     </script>
 </body>
