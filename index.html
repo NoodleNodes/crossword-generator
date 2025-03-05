@@ -1,4 +1,52 @@
-<!DOCTYPE html>
+<style>
+        @media print {
+            body, html {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .crossword-container, .clues-container {
+                page-break-inside: avoid;
+            }
+            
+            .input-section, .create-btn, header {
+                display: none !important;
+            }
+            
+            .container {
+                width: 100%;
+                max-width: none;
+                padding: 0;
+            }
+            
+            .content {
+                display: block;
+            }
+            
+            .preview-section {
+                width: 100%;
+                background: none;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .preview-tabs, .download-section, .scramble-btn {
+                display: none !important;
+            }
+            
+            .preview-content {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .crossword-cell {
+                border: 1px solid black !important;
+            }
+        }
+    </style><!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -199,11 +247,11 @@
         }
         
         .crossword-cell {
-            width: 30px;
-            height: 30px;
+            width: 25px;
+            height: 25px;
             border: 1px solid #333;
             text-align: center;
-            font-size: 18px;
+            font-size: 16px;
             position: relative;
             background-color: white;
         }
@@ -427,16 +475,12 @@
         <header>
             <h1>Crossword Puzzle</h1>
             <h2>Reading worksheet generator</h2>
-            
-            <div class="tabs">
-                <button class="tab active">Options</button>
-            </div>
         </header>
 
         <div class="content">
             <div class="input-section">
                 <h3 class="section-title">Enter crossword puzzle content</h3>
-                <p class="help-text">See instructions below. Under 20 words is best.</p>
+                <p class="help-text">See instructions below. Under 16 words is best for a single page.</p>
                 
                 <div>
                     <label for="puzzleTitle">Title</label>
@@ -566,15 +610,15 @@ spider, an eight-legged bug that spins webs`;
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                const parts = line.split(',');
-                if (parts.length < 2) {
+                // Split at the first comma to handle commas in definitions
+                const firstCommaIndex = line.indexOf(',');
+                if (firstCommaIndex === -1) {
                     showNotification("Line " + (i + 1) + " is missing a definition. Format: term, definition");
                     return null;
                 }
                 
-                const term = parts[0].trim().toUpperCase();
-                // Join the rest as the definition (in case there are commas in the definition)
-                const definition = parts.slice(1).join(',').trim();
+                const term = line.substring(0, firstCommaIndex).trim().toUpperCase();
+                const definition = line.substring(firstCommaIndex + 1).trim();
                 
                 // Remove spaces and special characters from terms
                 const cleanTerm = term.replace(/[^A-Z]/g, "");
@@ -595,8 +639,8 @@ spider, an eight-legged bug that spins webs`;
                 return null;
             }
             
-            if (words.length > 50) {
-                showNotification("Too many terms. Please limit to 50 terms for best results.");
+            if (words.length > 16) {
+                showNotification("Too many terms. Please limit to 16 terms for best page layout.");
                 return null;
             }
             
@@ -947,7 +991,7 @@ spider, an eight-legged bug that spins webs`;
             const width = grid[0].length;
             let currentNumber = 1;
             
-            // Reset existing numbers
+            // Clear out any existing numbers
             for (let i = 0; i < placedWords.length; i++) {
                 delete placedWords[i].number;
             }
@@ -998,6 +1042,14 @@ spider, an eight-legged bug that spins webs`;
                             currentNumber++;
                         }
                     }
+                }
+            }
+            
+            // Double check that all words have numbers - if any don't, assign them sequential numbers
+            for (let i = 0; i < placedWords.length; i++) {
+                if (placedWords[i].number === undefined) {
+                    placedWords[i].number = currentNumber++;
+                    console.warn("Word had to be manually numbered:", placedWords[i].word);
                 }
             }
             
@@ -1126,11 +1178,12 @@ spider, an eight-legged bug that spins webs`;
             
             // PDF options
             const options = {
-                margin: 10,
+                margin: [10, 10, 10, 10],
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { scale: 1.5, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all'] }
             };
             
             showLoading(true);
@@ -1160,11 +1213,12 @@ spider, an eight-legged bug that spins webs`;
             
             // PDF options
             const options = {
-                margin: 10,
+                margin: [10, 10, 10, 10],
                 filename: filename,
                 image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                html2canvas: { scale: 1.5, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+                pagebreak: { mode: ['avoid-all'] }
             };
             
             showLoading(true);
