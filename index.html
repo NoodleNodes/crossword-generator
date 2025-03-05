@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Crossword Puzzle Generator</title>
   <style>
     :root {
@@ -201,7 +201,7 @@
       to { transform: rotate(360deg); }
     }
 
-    /* ---------- New "page preview" container to mimic A4 size ---------- */
+    /* ---------- "Page preview" container, sized like A4 ---------- */
     .page-preview {
       /* Approx. A4 at 96 dpi: 794px x 1123px */
       width: 794px;
@@ -209,17 +209,17 @@
       border: 1px solid #ccc;
       margin: 0 auto;
       position: relative;
-      overflow: hidden; 
+      overflow: hidden;
       box-shadow: 0 0 4px rgba(0,0,0,0.2);
     }
-    /* Wrapper we can scale if puzzle is too big */
+    /* Wrapper we can scale if puzzle is too large */
     .page-scale-wrapper {
-      transform-origin: top left; 
+      transform-origin: top left;
       position: absolute;
-      left: 0; 
+      left: 0;
       top: 0;
-      width: auto;   /* let content define width */
-      height: auto;  /* let content define height */
+      width: auto;
+      height: auto;
     }
 
     /* CROSSWORD LAYOUT */
@@ -271,10 +271,6 @@
       flex: 1;
       min-width: 250px;
     }
-    .clue-title {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
     .clue-list {
       list-style-type: none;
       padding-left: 0;
@@ -298,8 +294,8 @@
         padding: 0;
         font-size: 10pt;
       }
-      .container, .input-section, .tabs, .scramble-btn, .save-section,
-      header, .create-btn, .preview-tabs, .download-section {
+      .container, .input-section, .tabs, .scramble-btn, header,
+      .create-btn, .preview-tabs, .download-section {
         display: none !important;
       }
       .preview-section {
@@ -317,7 +313,7 @@
         overflow: visible;
       }
       .preview-content, .page-scale-wrapper {
-        transform: none !important; /* We'll rely on normal flow during printing */
+        transform: none !important;
         width: 100%;
         height: auto;
         position: static;
@@ -426,24 +422,21 @@
     let generatedPuzzle = null;
     let currentPreviewTab = 'worksheet';
     
+    // Example placeholder
     window.onload = function() {
       const wordsList = document.getElementById('wordsList');
       if (!wordsList.value) {
-        wordsList.placeholder =
+        wordsList.placeholder = 
 `fire, flames that burn and can cause damage
 fire fighter, a person whose job is to put out fires
 smoke, the gray or black cloud that comes from a fire
-to burn, to be on fire or to cause something to be on fire
 burn, an injury caused by fire or heat
 to save, to stop something from being damaged or destroyed
-to scream, to make a loud, high sound because of fear or pain
-to shout, to speak very loudly
 to rescue, to save someone from danger
 to survive, to continue to live after a dangerous situation`;
       }
     };
 
-    // ----- Helper DOM functions -----
     function showPreviewTab(tabName) {
       currentPreviewTab = tabName;
       const previewTabs = document.getElementsByClassName("preview-tab");
@@ -452,7 +445,8 @@ to survive, to continue to live after a dangerous situation`;
       }
       document.querySelector(`.preview-tab[onclick="showPreviewTab('${tabName}')"]`)
               .classList.add("active");
-      // Show/hide the appropriate preview content
+
+      // Show/hide the correct preview
       if (tabName === 'worksheet') {
         document.getElementById('worksheetPreview').style.display = 'block';
         document.getElementById('answerKeyPreview').style.display = 'none';
@@ -476,34 +470,28 @@ to survive, to continue to live after a dangerous situation`;
       document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
     }
     
-    // ----- New function to auto-scale the puzzle preview -----
+    // Scale the puzzle to fit within .page-preview
     function updatePreviewScale() {
-      // “page-preview” is 794x1123. Let’s see how big our content is,
-      // then scale down if it’s too large to fit.
       const previewWrapper = document.querySelector('.page-preview');
       const scaleWrapper = document.getElementById('pageScaleWrapper');
-      
-      // Reset scale to 1 first (so we measure natural size).
+      // reset scale so we measure "actual" size
       scaleWrapper.style.transform = 'scale(1)';
-      
+
       const maxW = previewWrapper.clientWidth;
       const maxH = previewWrapper.clientHeight;
-      
       const contentW = scaleWrapper.scrollWidth;
       const contentH = scaleWrapper.scrollHeight;
-      
-      // If content is bigger than preview, shrink it
+
       let scale = 1;
-      if (contentW > 0 && contentH > 0) {
+      if (contentW && contentH) {
         const scaleW = maxW / contentW;
         const scaleH = maxH / contentH;
-        scale = Math.min(scaleW, scaleH, 1); 
+        scale = Math.min(scaleW, scaleH, 1);
       }
-      
       scaleWrapper.style.transform = `scale(${scale})`;
     }
-    
-    // ----- Parsing input -----
+
+    // Parse user input
     function parseWordsInput() {
       const wordsText = document.getElementById('wordsList').value.trim();
       const lines = wordsText.split('\n');
@@ -511,11 +499,13 @@ to survive, to continue to live after a dangerous situation`;
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i].trim();
         if (!line) continue;
+
         const firstCommaIndex = line.indexOf(',');
         if (firstCommaIndex === -1) {
           showNotification("Line " + (i + 1) + " is missing a definition. Format: term, definition");
           return null;
         }
+
         const term = line.substring(0, firstCommaIndex).trim().toUpperCase();
         const definition = line.substring(firstCommaIndex + 1).trim();
         const cleanTerm = term.replace(/[^A-Z]/g, "");
@@ -536,7 +526,7 @@ to survive, to continue to live after a dangerous situation`;
       return words;
     }
 
-    // ----- Generate puzzle -----
+    // Generate puzzle
     function generateCrossword() {
       showLoading(true);
       setTimeout(() => {
@@ -549,17 +539,18 @@ to survive, to continue to live after a dangerous situation`;
           const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword Puzzle";
           document.getElementById('previewTitle').textContent = puzzleTitle;
           document.getElementById('answerKeyTitle').textContent = puzzleTitle;
+
           try {
             generatedPuzzle = createCrosswordGrid(words);
-            renderCrossword(generatedPuzzle, false);
-            renderCrossword(generatedPuzzle, true);
+            renderCrossword(generatedPuzzle, false); // Worksheet
+            renderCrossword(generatedPuzzle, true);  // Answer Key
             showPreviewTab('worksheet');
-          } catch (error) {
-            console.error(error);
+          } catch (err) {
+            console.error(err);
             showNotification("Error generating crossword. Try different terms.");
           }
-        } catch (error) {
-          console.error(error);
+        } catch (err) {
+          console.error(err);
           showNotification("Error processing input. Check format.");
         } finally {
           showLoading(false);
@@ -567,14 +558,13 @@ to survive, to continue to live after a dangerous situation`;
       }, 100);
     }
 
-    // ----- Crossword building logic (unchanged) -----
     function createCrosswordGrid(words) {
       // Sort words by length descending
       words.sort((a, b) => b.word.length - a.word.length);
       const gridSize = calculateGridSize(words);
       const grid = createEmptyGrid(gridSize);
       const placedWords = [];
-      
+
       // Place first word in the middle horizontally
       const firstWord = words[0];
       const startX = Math.floor((gridSize - firstWord.word.length) / 2);
@@ -587,14 +577,15 @@ to survive, to continue to live after a dangerous situation`;
         startY: startY,
         horizontal: true
       });
-      
-      // Attempt to place remaining words
+
+      // Attempt to place remaining
       for (let i = 1; i < words.length; i++) {
         const currentWord = words[i];
         let placed = false;
+
         for (let j = 0; j < placedWords.length && !placed; j++) {
           const placedWord = placedWords[j];
-          // Try horizontal intersection
+          // horizontal intersection
           if (!placedWord.horizontal) {
             for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
               for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
@@ -616,7 +607,7 @@ to survive, to continue to live after a dangerous situation`;
               }
             }
           }
-          // Try vertical intersection
+          // vertical intersection
           if (placedWord.horizontal && !placed) {
             for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
               for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
@@ -639,17 +630,17 @@ to survive, to continue to live after a dangerous situation`;
             }
           }
         }
-        // If not placed, you could optionally retry or skip
       }
       // Trim
-      const trimmedGrid = trimGrid(grid);
-      const adjustX = trimmedGrid.trimFromLeft;
-      const adjustY = trimmedGrid.trimFromTop;
+      const trimmed = trimGrid(grid);
+      const adjustX = trimmed.trimFromLeft;
+      const adjustY = trimmed.trimFromTop;
       for (let pw of placedWords) {
         pw.startX -= adjustX;
         pw.startY -= adjustY;
       }
-      const numberedGrid = numberGrid(trimmedGrid.grid, placedWords);
+      numberGrid(trimmed.grid, placedWords);
+
       const acrossClues = [];
       const downClues = [];
       for (let w of placedWords) {
@@ -661,23 +652,24 @@ to survive, to continue to live after a dangerous situation`;
       }
       acrossClues.sort((a, b) => a.number - b.number);
       downClues.sort((a, b) => a.number - b.number);
+
       return {
-        grid: trimmedGrid.grid,
+        grid: trimmed.grid,
         placedWords: placedWords,
-        acrossClues: acrossClues,
-        downClues: downClues
+        acrossClues,
+        downClues
       };
     }
-    
+
     function calculateGridSize(words) {
       let maxLength = 0;
       for (let w of words) {
         maxLength = Math.max(maxLength, w.word.length);
       }
-      // some extra padding
+      // some padding
       return Math.max(20, maxLength + 10);
     }
-    
+
     function createEmptyGrid(size) {
       const g = [];
       for (let y = 0; y < size; y++) {
@@ -688,15 +680,15 @@ to survive, to continue to live after a dangerous situation`;
       }
       return g;
     }
-    
+
     function canPlaceWord(grid, word, startX, startY, horizontal) {
       const gridSize = grid.length;
       if (horizontal) {
-        if (startX < 0 || (startX + word.length) > gridSize || startY < 0 || startY >= gridSize) {
+        if (startX < 0 || startX + word.length > gridSize || startY < 0 || startY >= gridSize) {
           return false;
         }
       } else {
-        if (startX < 0 || startX >= gridSize || startY < 0 || (startY + word.length) > gridSize) {
+        if (startX < 0 || startX >= gridSize || startY < 0 || startY + word.length > gridSize) {
           return false;
         }
       }
@@ -710,13 +702,12 @@ to survive, to continue to live after a dangerous situation`;
         if (grid[y][x] === word[i]) {
           hasIntersection = true;
         }
-        // adjacency checks omitted for brevity
       }
-      // must intersect or be the first word
+      // must intersect or be first word
       return hasIntersection || (startX === Math.floor((gridSize - word.length) / 2)
              && startY === Math.floor(gridSize / 2));
     }
-    
+
     function placeWordOnGrid(grid, word, startX, startY, horizontal) {
       for (let i = 0; i < word.length; i++) {
         if (horizontal) {
@@ -726,7 +717,7 @@ to survive, to continue to live after a dangerous situation`;
         }
       }
     }
-    
+
     function trimGrid(grid) {
       const size = grid.length;
       let minX = size, maxX = 0, minY = size, maxY = 0;
@@ -759,29 +750,29 @@ to survive, to continue to live after a dangerous situation`;
         trimFromTop: minY
       };
     }
-    
+
     function numberGrid(grid, placedWords) {
       const height = grid.length;
       const width = grid[0].length;
       let currentNumber = 1;
-      for (let w of placedWords) {
-        delete w.number;
+      for (let pw of placedWords) {
+        delete pw.number;
       }
       for (let y = 0; y < height; y++) {
         for (let x = 0; x < width; x++) {
           if (grid[y][x] !== null) {
             let numberH = false;
             let numberV = false;
-            if ((x === 0 || grid[y][x-1] === null) &&
-                (x < width - 1 && grid[y][x+1] !== null)) {
+            if ((x === 0 || grid[y][x-1] === null)
+                && (x < width - 1 && grid[y][x+1] !== null)) {
               numberH = true;
             }
-            if ((y === 0 || grid[y-1][x] === null) &&
-                (y < height - 1 && grid[y+1][x] !== null)) {
+            if ((y === 0 || grid[y-1][x] === null)
+                && (y < height - 1 && grid[y+1][x] !== null)) {
               numberV = true;
             }
             if (numberH || numberV) {
-              // assign the number to matching placedWords
+              // Assign the number to matching words
               if (numberH) {
                 for (let pw of placedWords) {
                   if (pw.horizontal && pw.startX === x && pw.startY === y) {
@@ -807,20 +798,18 @@ to survive, to continue to live after a dangerous situation`;
           pw.number = currentNumber++;
         }
       }
-      return grid;
     }
 
-    // ----- Rendering the puzzle -----
     function renderCrossword(puzzle, showAnswers) {
       const grid = puzzle.grid;
       const height = grid.length;
       const width = grid[0].length;
       
-      // Adjust cell-size if puzzle is large
-      const maxDimension = Math.max(width, height);
+      // Cell size
+      const maxDim = Math.max(width, height);
       let cellSize = '25px';
-      if (maxDimension > 15) { cellSize = '22px'; }
-      else if (maxDimension > 12) { cellSize = '24px'; }
+      if (maxDim > 15) { cellSize = '22px'; }
+      else if (maxDim > 12) { cellSize = '24px'; }
 
       let html = `<div class="crossword-grid-container">
                     <table class="crossword-grid" style="--cell-size: ${cellSize};">`;
@@ -832,9 +821,9 @@ to survive, to continue to live after a dangerous situation`;
           } else {
             let cellNumber = '';
             if (isStartOfWord(grid, x, y)) {
-              const number = getWordNumber(puzzle.placedWords, x, y);
-              if (number) {
-                cellNumber = `<span class="cell-number">${number}</span>`;
+              const n = getWordNumber(puzzle.placedWords, x, y);
+              if (n) {
+                cellNumber = `<span class="cell-number">${n}</span>`;
               }
             }
             const cellContent = showAnswers ? grid[y][x] : '';
@@ -872,13 +861,11 @@ to survive, to continue to live after a dangerous situation`;
       } else {
         document.getElementById('crosswordContainer').innerHTML = html;
       }
-
-      // After we finish rendering, update the preview scaling
-      updatePreviewScale();
+      updatePreviewScale(); // <-- scale preview each time
     }
-    
+
     function isStartOfWord(grid, x, y) {
-      if (grid[y][x] === null) { return false; }
+      if (grid[y][x] === null) return false;
       const height = grid.length;
       const width = grid[0].length;
       const horizStart = ((x === 0 || grid[y][x-1] === null)
@@ -887,7 +874,7 @@ to survive, to continue to live after a dangerous situation`;
                           && (y < height - 1 && grid[y+1][x] !== null));
       return horizStart || vertStart;
     }
-    
+
     function getWordNumber(placedWords, x, y) {
       for (let pw of placedWords) {
         if (pw.startX === x && pw.startY === y) {
@@ -897,13 +884,13 @@ to survive, to continue to live after a dangerous situation`;
       return null;
     }
 
-    // ----- Export PDF -----
+    // PDF export
     function printPuzzle() {
       if (!generatedPuzzle) {
         showNotification("Generate a puzzle first");
         return;
       }
-      showPreviewTab('worksheet');
+      showPreviewTab('worksheet'); // ensure it's visible
       const puzzleTitle = (document.getElementById('puzzleTitle').value || "Crossword_Puzzle")
                           .replace(/\s+/g, '_');
       const filename = puzzleTitle + '.pdf';
@@ -912,13 +899,17 @@ to survive, to continue to live after a dangerous situation`;
         margin: [10, 10, 10, 10],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, useCORS: true,
-          windowWidth: 794,  // A4 width at 96 DPI
-          windowHeight: 1123 // A4 height at 96 DPI
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          windowWidth: 794,
+          windowHeight: 1123
         },
-        jsPDF: { 
-          unit: 'mm', format: 'a4', orientation: 'portrait', compress: true 
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait',
+          compress: true
         }
       };
       showLoading(true);
@@ -930,19 +921,19 @@ to survive, to continue to live after a dangerous situation`;
           showLoading(false);
           showNotification("Worksheet downloaded successfully");
         })
-        .catch(error => {
+        .catch(err => {
           showLoading(false);
-          console.error("PDF generation error:", error);
+          console.error("PDF generation error:", err);
           showNotification("Error downloading PDF. Try again.");
         });
     }
-    
+
     function printAnswerKey() {
       if (!generatedPuzzle) {
         showNotification("Generate a puzzle first");
         return;
       }
-      showPreviewTab('answerKey');
+      showPreviewTab('answerKey'); // ensure it's visible
       const puzzleTitle = (document.getElementById('puzzleTitle').value || "Crossword_Puzzle")
                           .replace(/\s+/g, '_');
       const filename = puzzleTitle + '_Answer_Key.pdf';
@@ -951,13 +942,17 @@ to survive, to continue to live after a dangerous situation`;
         margin: [10, 10, 10, 10],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { 
-          scale: 2, useCORS: true,
-          windowWidth: 794, 
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          windowWidth: 794,
           windowHeight: 1123
         },
-        jsPDF: { 
-          unit: 'mm', format: 'a4', orientation: 'portrait', compress: true 
+        jsPDF: {
+          unit: 'mm',
+          format: 'a4',
+          orientation: 'portrait',
+          compress: true
         }
       };
       showLoading(true);
@@ -969,9 +964,9 @@ to survive, to continue to live after a dangerous situation`;
           showLoading(false);
           showNotification("Answer key downloaded successfully");
         })
-        .catch(error => {
+        .catch(err => {
           showLoading(false);
-          console.error("PDF generation error:", error);
+          console.error("PDF generation error:", err);
           showNotification("Error downloading PDF. Try again.");
         });
     }
