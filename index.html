@@ -1,52 +1,4 @@
-<style>
-        @media print {
-            body, html {
-                width: 210mm;
-                height: 297mm;
-                margin: 0;
-                padding: 0;
-            }
-            
-            .crossword-container, .clues-container {
-                page-break-inside: avoid;
-            }
-            
-            .input-section, .create-btn, header {
-                display: none !important;
-            }
-            
-            .container {
-                width: 100%;
-                max-width: none;
-                padding: 0;
-            }
-            
-            .content {
-                display: block;
-            }
-            
-            .preview-section {
-                width: 100%;
-                background: none;
-                padding: 0;
-                margin: 0;
-                box-shadow: none;
-            }
-            
-            .preview-tabs, .download-section, .scramble-btn {
-                display: none !important;
-            }
-            
-            .preview-content {
-                box-shadow: none;
-                padding: 0;
-            }
-            
-            .crossword-cell {
-                border: 1px solid black !important;
-            }
-        }
-    </style><!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -295,24 +247,6 @@
             background-color: #005F6B;
         }
         
-        .scramble-btn {
-            background-color: #f1f1f1;
-            border: 1px solid #ddd;
-            color: #666;
-            border-radius: 50px;
-            padding: 8px 15px;
-            margin-bottom: 10px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-        }
-        
-        .scramble-btn svg {
-            margin-right: 5px;
-        }
-        
         .save-section {
             margin-top: 20px;
             border-top: 1px solid #eee;
@@ -427,7 +361,18 @@
         }
         
         @media print {
-            .input-section, .create-btn, .tabs, header {
+            body, html {
+                width: 210mm;
+                height: 297mm;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .crossword-container, .clues-container {
+                page-break-inside: avoid;
+            }
+            
+            .input-section, .create-btn, header {
                 display: none !important;
             }
             
@@ -449,13 +394,22 @@
                 box-shadow: none;
             }
             
-            .preview-tabs, .download-section, .scramble-btn, .save-section {
+            .preview-tabs, .download-section {
                 display: none !important;
             }
             
             .preview-content {
                 box-shadow: none;
                 padding: 0;
+                margin: 0 auto;
+                max-width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .crossword-grid {
+                margin: 0 auto 20px auto;
             }
             
             .crossword-cell {
@@ -466,6 +420,17 @@
                 background-color: black !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+            
+            /* Center content on the page */
+            .preview-title {
+                text-align: center;
+                margin: 0 0 20px 0;
+            }
+            
+            .clues-container {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -523,20 +488,10 @@
                     </div>
                 </div>
                 
-                <button class="scramble-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                        <path d="M12 22.5v-5.5m0 0l12-7m-24 0l12 7"></path>
-                    </svg>
-                    Scramble
-                </button>
-                
                 <div class="download-section">
                     <button class="download-btn" onclick="printPuzzle()">Download Worksheet</button>
                     <button class="download-btn" onclick="printAnswerKey()">Download Answer Key</button>
                 </div>
-                
-
             </div>
         </div>
     </div>
@@ -563,9 +518,6 @@ tiger, a big orange cat with black stripes
 spider, an eight-legged bug that spins webs`;
             }
         };
-        
-        // DOM functions
-        // Tab functionality removed as there's only one tab now
         
         function showPreviewTab(tabName) {
             currentPreviewTab = tabName;
@@ -771,11 +723,10 @@ spider, an eight-legged bug that spins webs`;
                 
                 // If word couldn't be placed, try again later
                 if (!placed) {
-                    // Instead of pushing all unplaced words, ensure we don't get stuck
-            // Only try a limited number of times
-            if (words.indexOf(currentWord) === i && words.length < 100) {
-                words.push(currentWord);
-            }
+                    // Only try a limited number of times
+                    if (words.indexOf(currentWord) === i && words.length < 100) {
+                        words.push(currentWord);
+                    }
                 }
             }
             
@@ -984,254 +935,3 @@ spider, an eight-legged bug that spins webs`;
                 trimFromLeft: minX,
                 trimFromTop: minY
             };
-        }
-        
-        function numberGrid(grid, placedWords) {
-            const height = grid.length;
-            const width = grid[0].length;
-            let currentNumber = 1;
-            
-            // Clear out any existing numbers
-            for (let i = 0; i < placedWords.length; i++) {
-                delete placedWords[i].number;
-            }
-            
-            // Create a numbered version of the grid
-            for (let y = 0; y < height; y++) {
-                for (let x = 0; x < width; x++) {
-                    if (grid[y][x] !== null) {
-                        let shouldNumberHorizontal = false;
-                        let shouldNumberVertical = false;
-                        
-                        // Check if this cell is the start of a horizontal word
-                        if (x === 0 || grid[y][x-1] === null) {
-                            if (x < width - 1 && grid[y][x+1] !== null) {
-                                shouldNumberHorizontal = true;
-                            }
-                        }
-                        
-                        // Check if this cell is the start of a vertical word
-                        if (y === 0 || grid[y-1][x] === null) {
-                            if (y < height - 1 && grid[y+1][x] !== null) {
-                                shouldNumberVertical = true;
-                            }
-                        }
-                        
-                        // If this cell should be numbered, find the corresponding words
-                        if (shouldNumberHorizontal || shouldNumberVertical) {
-                            // Number horizontal words
-                            if (shouldNumberHorizontal) {
-                                for (let i = 0; i < placedWords.length; i++) {
-                                    const word = placedWords[i];
-                                    if (word.horizontal && word.startX === x && word.startY === y) {
-                                        word.number = currentNumber;
-                                    }
-                                }
-                            }
-                            
-                            // Number vertical words
-                            if (shouldNumberVertical) {
-                                for (let i = 0; i < placedWords.length; i++) {
-                                    const word = placedWords[i];
-                                    if (!word.horizontal && word.startX === x && word.startY === y) {
-                                        word.number = currentNumber;
-                                    }
-                                }
-                            }
-                            
-                            currentNumber++;
-                        }
-                    }
-                }
-            }
-            
-            // Double check that all words have numbers - if any don't, assign them sequential numbers
-            for (let i = 0; i < placedWords.length; i++) {
-                if (placedWords[i].number === undefined) {
-                    placedWords[i].number = currentNumber++;
-                    console.warn("Word had to be manually numbered:", placedWords[i].word);
-                }
-            }
-            
-            return grid;
-        }
-        
-        // Rendering functions
-        function renderCrossword(puzzle, showAnswers) {
-            const grid = puzzle.grid;
-            const height = grid.length;
-            const width = grid[0].length;
-            
-            let html = '<table class="crossword-grid">';
-            
-            for (let y = 0; y < height; y++) {
-                html += '<tr>';
-                
-                for (let x = 0; x < width; x++) {
-                    if (grid[y][x] === null) {
-                        html += '<td></td>';
-                    } else {
-                        // Check if this cell should have a number
-                        let cellNumber = '';
-                        
-                        if (isStartOfWord(grid, x, y)) {
-                            const number = getWordNumber(puzzle.placedWords, x, y);
-                            if (number) {
-                                cellNumber = `<span class="cell-number">${number}</span>`;
-                            }
-                        }
-                        
-                        // For answer key, show the letter. For worksheet, show empty cell
-                        const cellContent = showAnswers ? grid[y][x] : '';
-                        
-                        html += `<td class="crossword-cell">${cellNumber}${cellContent}</td>`;
-                    }
-                }
-                
-                html += '</tr>';
-            }
-            
-            html += '</table>';
-            
-            // Add clues
-            html += '<div class="clues-container">';
-            
-            // Across clues
-            if (puzzle.acrossClues.length > 0) {
-                html += '<div class="across-clues">';
-                html += '<div class="worksheet-heading">Across:</div>';
-                html += '<ol class="clue-list">';
-                
-                for (const clue of puzzle.acrossClues) {
-                    html += `<li class="clue-item"><strong>${clue.number}.</strong> ${clue.clue}</li>`;
-                }
-                
-                html += '</ol>';
-                html += '</div>';
-            }
-            
-            // Down clues
-            if (puzzle.downClues.length > 0) {
-                html += '<div class="down-clues">';
-                html += '<div class="worksheet-heading">Down:</div>';
-                html += '<ol class="clue-list">';
-                
-                for (const clue of puzzle.downClues) {
-                    html += `<li class="clue-item"><strong>${clue.number}.</strong> ${clue.clue}</li>`;
-                }
-                
-                html += '</ol>';
-                html += '</div>';
-            }
-            
-            html += '</div>';
-            
-            // Update the appropriate container
-            if (showAnswers) {
-                document.getElementById('answerKeyContainer').innerHTML = html;
-            } else {
-                document.getElementById('crosswordContainer').innerHTML = html;
-            }
-        }
-        
-        function isStartOfWord(grid, x, y) {
-            const height = grid.length;
-            const width = grid[0].length;
-            
-            // Check if this is a valid filled cell
-            if (grid[y][x] === null) {
-                return false;
-            }
-            
-            // Check if this is the start of a horizontal word
-            const isHorizontalStart = (x === 0 || grid[y][x-1] === null) && (x < width - 1 && grid[y][x+1] !== null);
-            
-            // Check if this is the start of a vertical word
-            const isVerticalStart = (y === 0 || grid[y-1][x] === null) && (y < height - 1 && grid[y+1][x] !== null);
-            
-            return isHorizontalStart || isVerticalStart;
-        }
-        
-        function getWordNumber(placedWords, x, y) {
-            for (let i = 0; i < placedWords.length; i++) {
-                const word = placedWords[i];
-                if (word.startX === x && word.startY === y) {
-                    return word.number;
-                }
-            }
-            return null;
-        }
-        
-        // Export functions
-        function printPuzzle() {
-            if (!generatedPuzzle) {
-                showNotification("Generate a puzzle first");
-                return;
-            }
-            
-            showPreviewTab('worksheet');
-            const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword_Puzzle";
-            const filename = puzzleTitle.replace(/\s+/g, '_') + '.pdf';
-            
-            // Get the content to print
-            const content = document.getElementById('worksheetPreview');
-            
-            // PDF options
-            const options = {
-                margin: [10, 10, 10, 10],
-                filename: filename,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 1.5, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all'] }
-            };
-            
-            showLoading(true);
-            
-            html2pdf().set(options).from(content).save().then(() => {
-                showLoading(false);
-                showNotification("Worksheet downloaded successfully");
-            }).catch(error => {
-                showLoading(false);
-                console.error("PDF generation error:", error);
-                showNotification("Error downloading PDF. Try again.");
-            });
-        }
-        
-        function printAnswerKey() {
-            if (!generatedPuzzle) {
-                showNotification("Generate a puzzle first");
-                return;
-            }
-            
-            showPreviewTab('answerKey');
-            const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword_Puzzle";
-            const filename = puzzleTitle.replace(/\s+/g, '_') + '_Answer_Key.pdf';
-            
-            // Get the content to print
-            const content = document.getElementById('answerKeyPreview');
-            
-            // PDF options
-            const options = {
-                margin: [10, 10, 10, 10],
-                filename: filename,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 1.5, useCORS: true },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-                pagebreak: { mode: ['avoid-all'] }
-            };
-            
-            showLoading(true);
-            
-            html2pdf().set(options).from(content).save().then(() => {
-                showLoading(false);
-                showNotification("Answer key downloaded successfully");
-            }).catch(error => {
-                showLoading(false);
-                console.error("PDF generation error:", error);
-                showNotification("Error downloading PDF. Try again.");
-            });
-        }
-    </script>
-</body>
-</html>
