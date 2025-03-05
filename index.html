@@ -221,6 +221,18 @@
       width: auto;
       height: auto;
     }
+    
+    /* For PDF export - we'll hide this normally */
+    .pdf-export-container {
+      position: fixed;
+      left: -9999px;
+      top: -9999px;
+      visibility: hidden;
+    }
+    .pdf-export-container.active {
+      position: static;
+      visibility: visible;
+    }
 
     /* CROSSWORD LAYOUT */
     .crossword-grid-container {
@@ -295,7 +307,7 @@
         font-size: 10pt;
       }
       .container, .input-section, .tabs, .scramble-btn, header,
-      .create-btn, .preview-tabs, .download-section {
+      .create-btn, .preview-tabs, .download-section, .page-preview {
         display: none !important;
       }
       .preview-section {
@@ -305,34 +317,37 @@
         margin: 0;
         box-shadow: none;
       }
-      .page-preview {
-        width: auto;
-        height: auto;
-        border: none;
-        box-shadow: none;
-        overflow: visible;
-      }
-      .preview-content, .page-scale-wrapper {
+      .pdf-export-container {
+        position: static !important;
+        visibility: visible !important;
         transform: none !important;
-        width: 100%;
-        height: auto;
-        position: static;
+        width: 100% !important;
+        height: auto !important;
       }
-      .crossword-grid-container {
+      .pdf-export-container .crossword-grid-container {
         margin-bottom: 5mm;
       }
-      .crossword-cell {
+      .pdf-export-container .crossword-cell {
         width: 7mm;
         height: 7mm;
         border: 0.5pt solid black !important;
         font-size: 12pt;
       }
-      .cell-number {
+      .pdf-export-container .cell-number {
         font-size: 6pt;
       }
-      .clues-container {
+      .pdf-export-container .clues-container {
         column-count: 2;
         column-gap: 8mm;
+        width: 100%;
+      }
+      .pdf-export-container .worksheet-heading {
+        font-size: 12pt;
+        margin-bottom: 4mm;
+      }
+      .pdf-export-container .preview-title {
+        font-size: 16pt;
+        margin-bottom: 8mm;
       }
     }
   </style>
@@ -409,6 +424,10 @@
       </div>
     </div>
   </div>
+
+  <!-- Hidden containers for PDF export (no scaling applied) -->
+  <div id="pdfWorksheetContainer" class="pdf-export-container"></div>
+  <div id="pdfAnswerKeyContainer" class="pdf-export-container"></div>
 
   <div class="notification" id="notification">Notification message</div>
   <div class="loading-overlay" id="loadingOverlay">
@@ -856,11 +875,27 @@ to survive, to continue to live after a dangerous situation`;
       }
       html += '</div>';
 
+      // Update both the preview and PDF export containers
       if (showAnswers) {
         document.getElementById('answerKeyContainer').innerHTML = html;
+        
+        // For PDF export - full unscaled version
+        document.getElementById('pdfAnswerKeyContainer').innerHTML = 
+          `<div class="preview-content">
+            <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
+            ${html}
+          </div>`;
       } else {
         document.getElementById('crosswordContainer').innerHTML = html;
+        
+        // For PDF export - full unscaled version
+        document.getElementById('pdfWorksheetContainer').innerHTML = 
+          `<div class="preview-content">
+            <h3 class="preview-title">${document.getElementById('puzzleTitle').value || "Crossword Puzzle"}</h3>
+            ${html}
+          </div>`;
       }
+      
       updatePreviewScale(); // <-- scale preview each time
     }
 
@@ -890,20 +925,22 @@ to survive, to continue to live after a dangerous situation`;
         showNotification("Generate a puzzle first");
         return;
       }
-      showPreviewTab('worksheet'); // ensure it's visible
+      
       const puzzleTitle = (document.getElementById('puzzleTitle').value || "Crossword_Puzzle")
                           .replace(/\s+/g, '_');
       const filename = puzzleTitle + '.pdf';
-      const content = document.getElementById('worksheetPreview');
+      
+      // Use the unscaled version for PDF export
+      const content = document.getElementById('pdfWorksheetContainer');
+      content.classList.add('active'); // Make it visible for html2pdf
+      
       const options = {
         margin: [10, 10, 10, 10],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
-          useCORS: true,
-          windowWidth: 794,
-          windowHeight: 1123
+          useCORS: true
         },
         jsPDF: {
           unit: 'mm',
@@ -912,16 +949,20 @@ to survive, to continue to live after a dangerous situation`;
           compress: true
         }
       };
+      
       showLoading(true);
+      
       html2pdf()
         .set(options)
         .from(content)
         .save()
         .then(() => {
+          content.classList.remove('active');
           showLoading(false);
           showNotification("Worksheet downloaded successfully");
         })
         .catch(err => {
+          content.classList.remove('active');
           showLoading(false);
           console.error("PDF generation error:", err);
           showNotification("Error downloading PDF. Try again.");
@@ -933,20 +974,22 @@ to survive, to continue to live after a dangerous situation`;
         showNotification("Generate a puzzle first");
         return;
       }
-      showPreviewTab('answerKey'); // ensure it's visible
+      
       const puzzleTitle = (document.getElementById('puzzleTitle').value || "Crossword_Puzzle")
                           .replace(/\s+/g, '_');
       const filename = puzzleTitle + '_Answer_Key.pdf';
-      const content = document.getElementById('answerKeyPreview');
+      
+      // Use the unscaled version for PDF export
+      const content = document.getElementById('pdfAnswerKeyContainer');
+      content.classList.add('active'); // Make it visible for html2pdf
+      
       const options = {
         margin: [10, 10, 10, 10],
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
           scale: 2,
-          useCORS: true,
-          windowWidth: 794,
-          windowHeight: 1123
+          useCORS: true
         },
         jsPDF: {
           unit: 'mm',
@@ -955,16 +998,20 @@ to survive, to continue to live after a dangerous situation`;
           compress: true
         }
       };
+      
       showLoading(true);
+      
       html2pdf()
         .set(options)
         .from(content)
         .save()
         .then(() => {
+          content.classList.remove('active');
           showLoading(false);
           showNotification("Answer key downloaded successfully");
         })
         .catch(err => {
+          content.classList.remove('active');
           showLoading(false);
           console.error("PDF generation error:", err);
           showNotification("Error downloading PDF. Try again.");
