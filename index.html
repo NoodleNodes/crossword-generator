@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crossword Puzzle Generator</title>
+    <style>
+        :root {
+            --primary-color: #00BCD4;
+            --secondary-color: #007A87;
+            --light-gray: #f3f3f3;
+            --dark-gray: #333;
+            --border-color: #ddd;
+        }
+        
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #fff;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        header {
+            padding: 20px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 2.2rem;
+        }
+        
+        h2 {
+            color: #444;
+            font-weight: normal;
+            margin: 0;
+        }
+        
+        .tabs {
+            display: flex;
+            margin-top: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-size: 16px;
+            position: relative;
+        }
+        
+        .tab.active {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+        
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background-color: var(--primary-color);
+        }
+        
+        .content {
+            display: flex;
+            margin-top: 30px;
+            gap: 40px;
+        }
+        
+        .input-section {
+            flex: 1;
+        }
+        
+        .preview-section {
+            flex: 1;
+            background-color: white;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .help-text {
+            margin-bottom: 20px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .help-link {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .title-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+        
+        .word-input {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            resize: vertical;
+            font-size: 14px;
+            font-family: monospace;
+        }
+        
+        .example-text {
+            color: #777;
+            font-size: 14px;
+            margin-top: 10px;
+            margin-bottom: 5px;
+        }
+        
+        .create-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            float: right;
+        }
+        
+        .create-btn:hover {
+            background-color: #005F6B;
+        }
+        
+        .preview-tabs {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        .preview-tab {
+            padding: 8px 20px;
+            cursor: pointer;
+            background-color: #e0e0e0;
+            border: none;
+            margin-right: 5px;
+            font-weight: bold;
+            font-size: 14px;
+            border-radius: 3px 3px 0 0;
+        }
+        
+        .preview-tab.active {
+            background-color: #fff;
+        }
+        
+        .preview-content {
+            background-color: white;
+            border-radius: 4px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .preview-title {
+            margin-bottom: 25px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .crossword-grid {
+            border-collapse: collapse;
+            margin: 0 auto;
+            margin-bottom: 20px;
+            border: 2px solid white;
+        }
+        
+        table.crossword-grid td {
+            padding: 0;
+        }
+        
+        .crossword-cell {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #333;
+            text-align: center;
+            font-size: 18px;
+            position: relative;
+            background-color: white;
+        }
+        
+        .crossword-cell.filled {
+            background-color: white;
+        }
+        
+        .crossword-cell.empty {
+            background-color: white;
+            border: none;
+        }
+        
+        .cell-number {
+            position: absolute;
+            top: 1px;
+            left: 2px;
+            font-size: 9px;
+            font-weight: normal;
+        }
+        
+        .download-section {
+            margin-top: 20px;
+        }
+        
+        .download-btn {
+            background-color: #eee;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin: 5px;
+            display: block;
+            width: 100%;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        .download-btn:hover {
+            background-color: #ddd;
+        }
+        
+        .scramble-btn {
+            background-color: #f1f1f1;
+            border: 1px solid #ddd;
+            color: #666;
+            border-radius: 50px;
+            padding: 8px 15px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .scramble-btn svg {
+            margin-right: 5px;
+        }
+        
+        .save-section {
+            margin-top: 20px;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
+        }
+        
+        .save-title {
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .save-row {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        
+        .save-input {
+            flex: 1;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+        
+        .save-btn {
+            background-color: #eee;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 0 15px;
+            cursor: pointer;
+        }
+        
+        .worksheet-heading {
+            margin: 0 0 15px 0;
+            text-align: left;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .clues-container {
+            margin-top: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 40px;
+            text-align: left;
+        }
+        
+        .across-clues, .down-clues {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .clue-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .clue-list {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        
+        .clue-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: var(--primary-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--primary-color);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            transform: translateX(200%);
+            transition: transform 0.3s ease-in-out;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        @media print {
+            .input-section, .create-btn, .tabs, header {
+                display: none !important;
+            }
+            
+            .container {
+                width: 100%;
+                max-width: none;
+                padding: 0;
+            }
+            
+            .content {
+                display: block;
+            }
+            
+            .preview-section {
+                width: 100%;
+                background: none;
+                padding: 0;
+                margin: 0;
+                box-shadow: none;
+            }
+            
+            .preview-tabs, .download-section, .scramble-btn, .save-section {
+                display: none !important;
+            }
+            
+            .preview-content {
+                box-shadow: none;
+                padding: 0;
+            }
+            
+            .crossword-cell {
+                border: 1px solid black !important;
+            }
+            
+            .crossword-cell.empty {
+                background-color: black !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Crossword Puzzle</h1>
+            <h2>Reading worksheet generator</h2>
+            
+            <div class="tabs">
+                <button class="tab active" onclick="openTab('optionsTab')">Options</button>
+                <button class="tab" onclick="openTab('themeTab')">Theme</button>
+            </div>
+        </header>
+
+        <div class="content">
+            <div class="input-section">
+                <h3 class="section-title">Enter crossword puzzle content</h3>
+                <p class="help-text">See instructions below. Under 50 words is best. More help: <a href="#" class="help-link">help</a></p>
+                
+                <div>
+                    <label for="puzzleTitle">Title</label>
+                    <input type="text" id="puzzleTitle" class="title-input" value="Crossword Puzzle">
+                </div>
+                
+                <div>
+                    <label for="wordsList">Words</label>
+                    <textarea id="wordsList" class="word-input" placeholder="Type or paste your list of words here"></textarea>
+                    <p class="example-text">Example:</p>
+                    <p class="example-text">alligator, a reptile that looks a little like a crocodile</p>
+                    <p class="example-text">tiger, a big orange cat with black stripes</p>
+                    <p class="example-text">spider, an eight-legged bug that spins webs</p>
+                </div>
+                
+                <button class="create-btn" onclick="generateCrossword()">Create</button>
+            </div>
+            
+            <div class="preview-section">
+                <h3 class="section-title">Preview Worksheet</h3>
+                
+                <div class="preview-tabs">
+                    <button class="preview-tab active" onclick="showPreviewTab('worksheet')">WORKSHEET</button>
+                    <button class="preview-tab" onclick="showPreviewTab('answerKey')">ANSWER KEY</button>
+                </div>
+                
+                <div id="previewContent" class="preview-content">
+                    <div id="worksheetPreview">
+                        <h3 class="preview-title" id="previewTitle">Crossword Puzzle</h3>
+                        <div id="crosswordContainer">
+                            <p>Your puzzle will appear here after you create it.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="answerKeyPreview" style="display: none;">
+                        <h3 class="preview-title" id="answerKeyTitle">Crossword Puzzle</h3>
+                        <div id="answerKeyContainer">
+                            <p>Your answer key will appear here after you create it.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="scramble-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                        <path d="M12 22.5v-5.5m0 0l12-7m-24 0l12 7"></path>
+                    </svg>
+                    Scramble
+                </button>
+                
+                <div class="download-section">
+                    <button class="download-btn" onclick="printPuzzle()">Download Worksheet</button>
+                    <button class="download-btn" onclick="printAnswerKey()">Download Answer Key</button>
+                </div>
+                
+                <div class="save-section">
+                    <p class="save-title">Save worksheet</p>
+                    <div class="save-row">
+                        <input type="text" class="save-input" id="saveFileName" value="Crossword Puzzle">
+                        <button class="save-btn">Save</button>
+                    </div>
+                    
+                    <p class="save-title">My saved worksheets</p>
+                    <div class="save-row">
+                        <select class="save-input">
+                            <option>...</option>
+                        </select>
+                        <button class="save-btn">Delete</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="notification" id="notification">Notification message</div>
+    
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script>
+        // Global variables
+        let generatedPuzzle = null;
+        let currentPreviewTab = 'worksheet';
+        
+        // Initialize example text
+        window.onload = function() {
+            const wordsList = document.getElementById('wordsList');
+            if (!wordsList.value) {
+                wordsList.placeholder = 
+`alligator, a reptile that looks a little like a crocodile
+tiger, a big orange cat with black stripes
+spider, an eight-legged bug that spins webs`;
+            }
+        };
+        
+        // DOM functions
+        function openTab(tabName) {
+            const tabs = document.getElementsByClassName("tab");
+            
+            for (let i = 0; i < tabs.length; i++) {
+                tabs[i].classList.remove("active");
+            }
+            
+            document.querySelector(`.tab[onclick="openTab('${tabName}')"]`).classList.add("active");
+            
+            // In a real implementation, we would show/hide tab content here
+        }
+        
+        function showPreviewTab(tabName) {
+            currentPreviewTab = tabName;
+            
+            const previewTabs = document.getElementsByClassName("preview-tab");
+            for (let i = 0; i < previewTabs.length; i++) {
+                previewTabs[i].classList.remove("active");
+            }
+            
+            document.querySelector(`.preview-tab[onclick="showPreviewTab('${tabName}')"]`).classList.add("active");
+            
+            // Show/hide the appropriate preview content
+            if (tabName === 'worksheet') {
+                document.getElementById('worksheetPreview').style.display = 'block';
+                document.getElementById('answerKeyPreview').style.display = 'none';
+            } else {
+                document.getElementById('worksheetPreview').style.display = 'none';
+                document.getElementById('answerKeyPreview').style.display = 'block';
+            }
+        }
+        
+        function showNotification(message) {
+            const notification = document.getElementById("notification");
+            notification.textContent = message;
+            notification.classList.add("show");
+            
+            setTimeout(() => {
+                notification.classList.remove("show");
+            }, 3000);
+        }
+        
+        function showLoading(show) {
+            document.getElementById("loadingOverlay").style.display = show ? "flex" : "none";
+        }
+        
+        function parseWordsInput() {
+            const wordsText = document.getElementById('wordsList').value.trim();
+            const lines = wordsText.split('\n');
+            const words = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                if (!line) continue;
+                
+                const parts = line.split(',');
+                if (parts.length < 2) {
+                    showNotification("Line " + (i + 1) + " is missing a definition. Format: term, definition");
+                    return null;
+                }
+                
+                const term = parts[0].trim().toUpperCase();
+                // Join the rest as the definition (in case there are commas in the definition)
+                const definition = parts.slice(1).join(',').trim();
+                
+                // Remove spaces and special characters from terms
+                const cleanTerm = term.replace(/[^A-Z]/g, "");
+                
+                if (cleanTerm.length < 2) {
+                    showNotification("Term '" + term + "' is too short. Terms must be at least 2 letters long.");
+                    return null;
+                }
+                
+                words.push({
+                    word: cleanTerm,
+                    clue: definition
+                });
+            }
+            
+            if (words.length < 3) {
+                showNotification("Please enter at least 3 terms with definitions");
+                return null;
+            }
+            
+            if (words.length > 50) {
+                showNotification("Too many terms. Please limit to 50 terms for best results.");
+                return null;
+            }
+            
+            return words;
+        }
+
+        // Crossword generation functions
+        function generateCrossword() {
+            const words = parseWordsInput();
+            if (!words) return;
+            
+            const puzzleTitle = document.getElementById('puzzleTitle').value || "Crossword Puzzle";
+            
+            // Update preview titles
+            document.getElementById('previewTitle').textContent = puzzleTitle;
+            document.getElementById('answerKeyTitle').textContent = puzzleTitle;
+            document.getElementById('saveFileName').value = puzzleTitle;
+            
+            showLoading(true);
+            
+            // Use setTimeout to allow the loading screen to appear
+            setTimeout(() => {
+                try {
+                    // Create the crossword puzzle
+                    generatedPuzzle = createCrosswordGrid(words);
+                    
+                    // Render the puzzle and answer key
+                    renderCrossword(generatedPuzzle, false);
+                    renderCrossword(generatedPuzzle, true);
+                    
+                    // Show the worksheet tab by default
+                    showPreviewTab('worksheet');
+                } catch (error) {
+                    console.error(error);
+                    showNotification("Error generating crossword. Try different terms.");
+                } finally {
+                    showLoading(false);
+                }
+            }, 100);
+        }
+        
+        function createCrosswordGrid(words) {
+            // Sort words by length (longest first)
+            words.sort((a, b) => b.word.length - a.word.length);
+            
+            const gridSize = calculateGridSize(words);
+            const grid = createEmptyGrid(gridSize);
+            const placedWords = [];
+            
+            // Place the first word in the middle horizontally
+            const firstWord = words[0];
+            const startX = Math.floor((gridSize - firstWord.word.length) / 2);
+            const startY = Math.floor(gridSize / 2);
+            
+            placeWordOnGrid(grid, firstWord.word, startX, startY, true);
+            placedWords.push({
+                word: firstWord.word,
+                clue: firstWord.clue,
+                startX: startX,
+                startY: startY,
+                horizontal: true
+            });
+            
+            // Try to place remaining words
+            for (let i = 1; i < words.length; i++) {
+                const currentWord = words[i];
+                let placed = false;
+                
+                // Try to intersect with previously placed words
+                for (let j = 0; j < placedWords.length && !placed; j++) {
+                    const placedWord = placedWords[j];
+                    
+                    // Try to intersect horizontally
+                    if (!placedWord.horizontal) {
+                        for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
+                            for (let placedCharIndex = 0; placedCharIndex < placedWord.word.length && !placed; placedCharIndex++) {
+                                if (currentWord.word[charIndex] === placedWord.word[placedCharIndex]) {
+                                    const newX = placedWord.startX - charIndex;
+                                    const newY = placedWord.startY + placedCharIndex;
+                                    
+                                    if (canPlaceWord(grid, currentWord.word, newX, newY, true)) {
+                                        placeWordOnGrid(grid, currentWord.word, newX, newY, true);
+                                        placedWords.push({
+                                            word: currentWord.word,
+                                            clue: currentWord.clue,
+                                            startX: newX,
+                                            startY: newY,
+                                            horizontal: true
+                                        });
+                                        placed = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Try to intersect vertically
+                    if (placedWord.horizontal && !placed) {
+                        for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
+                            for (let placedCharIndex = 0; placedCharIndex < placedWord.word.length && !placed; placedCharIndex++) {
+                                if (currentWord.word[charIndex] === placedWord.word[placedCharIndex]) {
+                                    const newX = placedWord.startX + placedCharIndex;
+                                    const newY = placedWord.startY - charIndex;
+                                    
+                                    if (canPlaceWord(grid, currentWord.word, newX, newY, false)) {
+                                        placeWordOnGrid(grid, currentWord.word, newX, newY, false);
+                                        placedWords.push({
+                                            word: currentWord.word,
+                                            clue: currentWord.clue,
+                                            startX: newX,
+                                            startY: newY,
+                                            horizontal: false
+                                        });
+                                        placed = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                // If word couldn't be placed, try again later
+                if (!placed) {
+                    words.push(currentWord);
+                }
+            }
+            
+            // Trim the grid to remove empty rows and columns
+            const trimmedGrid = trimGrid(grid);
+            
+            // Adjust word positions based on the trimmed grid
+            const adjustX = trimmedGrid.trimFromLeft;
+            const adjustY = trimmedGrid.trimFromTop;
+            
+            for (let i = 0; i < placedWords.length; i++) {
+                placedWords[i].startX -= adjustX;
+                placedWords[i].startY -= adjustY;
+            }
+            
+            // Number the grid
+            const numberedGrid = numberGrid(trimmedGrid.grid, placedWords);
+            
+            // Separate clues into across and down
+            const acrossClues = [];
+            const downClues = [];
+            
+            for (let i = 0; i < placedWords.length; i++) {
+                const word = placedWords[i];
+                
+                if (word.horizontal) {
+                    acrossClues.push({
+                        number: word.number,
+                        clue: word.clue,
+                        word: word.word
+                    });
+                } else {
+                    downClues.push({
+                        number: word.number,
+                        clue: word.clue,
+                        word: word.word
+                    });
+                }
+            }
+            
+            // Sort clues by number
+            acrossClues.sort((a, b) => a.number - b.number);
+            downClues.sort((a, b) => a.number - b.number);
+            
+            return {
+                grid: trimmedGrid.grid,
+                placedWords: placedWords,
+                acrossClues: acrossClues,
+                downClues: downClues
+            };
+        }
+        
+        function calculateGridSize(words) {
+            let maxLength = 0;
+            for (let i = 0; i < words.length; i++) {
+                maxLength = Math.max(maxLength, words[i].word.length);
+            }
+            
+            // Ensure the grid is large enough for the longest word plus some padding
+            return Math.max(20, maxLength + 10);
+        }
+        
+        function createEmptyGrid(size) {
+            const grid = [];
+            for (let i = 0; i < size; i++) {
+                grid[i] = [];
+                for (let j = 0; j < size; j++) {
+                    grid[i][j] = null;
+                }
+            }
+            return grid;
+        }
+        
+        function canPlaceWord(grid, word, startX, startY, horizontal) {
+            const gridSize = grid.length;
+            
+            // Check if the word fits within the grid bounds
+            if (horizontal) {
+                if (startX < 0 || startX + word.length > gridSize || startY < 0 || startY >= gridSize) {
+                    return false;
+                }
+            } else {
+                if (startX < 0 || startX >= gridSize || startY < 0 || startY + word.length > gridSize) {
+                    return false;
+                }
+            }
+            
+            // Check if the positions are valid
+            let hasIntersection = false;
+            
+            for (let i = 0; i < word.length; i++) {
+                let x = horizontal ? startX + i : startX;
+                let y = horizontal ? startY : startY + i;
+                
+                // Check the cell itself
+                if (grid[y][x] !== null && grid[y][x] !== word[i]) {
+                    return false;
+                }
+                
+                if (grid[y][x] === word[i]) {
+                    hasIntersection = true;
+                } else {
+                    // Check adjacent cells (above, below, left, right)
+                    // We don't want words to be adjacent to each other without intersecting
+                    
+                    // For horizontal words, check above and below
+                    if (horizontal) {
+                        // Check cell above
+                        if (y > 0 && grid[y-1][x] !== null) {
+                            return false;
+                        }
+                        
+                        // Check cell below
+                        if (y < gridSize - 1 && grid[y+1][x] !== null) {
+                            return false;
+                        }
+                        
+                        // Check cell before the start (left)
+                        if (i === 0 && x > 0 && grid[y][x-1] !== null) {
+                            return false;
+                        }
+                        
+                        // Check cell after the end (right)
+                        if (i === word.length - 1 && x < gridSize - 1 && grid[y][x+1] !== null) {
+                            return false;
+                        }
+                    }
+                    // For vertical words, check left and right
+                    else {
+                        // Check cell to the left
+                        if (x > 0 && grid[y][x-1] !== null) {
+                            return false;
+                        }
+                        
+                        // Check cell to the right
+                        if (x < gridSize - 1 && grid[y][x+1] !== null) {
+                            return false;
+                        }
+                        
+                        // Check cell before the start (above)
+                        if (i === 0 && y > 0 && grid[y-1][x] !== null) {
+                            return false;
+                        }
+                        
+                        // Check cell after the end (below)
+                        if (i === word.length - 1 && y < gridSize - 1 && grid[y+1][x] !== null) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            
+            // Word must have at least one intersection with existing words
+            return hasIntersection || startX === Math.floor((gridSize - word.length) / 2) && startY === Math.floor(gridSize / 2);
+        }
+        
+        function placeWordOnGrid(grid, word, startX, startY, horizontal) {
+            for (let i = 0; i < word.length; i++) {
+                if (horizontal) {
+                    grid[startY][startX + i] = word[i];
+                } else {
+                    grid[startY + i][startX] = word[i];
+                }
+            }
+        }
+        
+        function trimGrid(grid) {
+            const size = grid.length;
+            let minX = size;
+            let maxX = 0;
+            let minY = size;
+            let maxY = 0;
+            
+            // Find the boundaries of the filled cells
+            for (let y = 0; y < size; y++) {
+                for (let x = 0; x < size; x++) {
+                    if (grid[y][x] !== null) {
+                        minX = Math.min(minX, x);
+                        maxX = Math.max(maxX, x);
+                        minY = Math.min(minY, y);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+            }
+            
+            // Add padding
+            minX = Math.max(0, minX - 1);
+            minY = Math.max(0, minY - 1);
+            maxX = Math.min(size - 1, maxX + 1);
+            maxY = Math.min(size - 1, maxY + 1);
+            
+            // Create the new trimmed grid
+            const newWidth = maxX - minX + 1;
+            const newHeight = maxY - minY + 1;
+            const trimmedGrid = [];
+            
+            for (let y = 0; y < newHeight; y++) {
+                trimmedGrid[y] = [];
+                for (let x = 0; x < newWidth; x++) {
+                    trimmedGrid[y][x] = grid[y + minY][x + minX];
+                }
+            }
+            
+            return {
+                grid: trimmedGrid,
+                trimFromLeft: minX,
+                trimFromTop: minY
+            };
+        }
+        
+        function numberGrid(grid, placedWords) {
+            const height = grid.length;
+            const width = grid[0].length;
+            let currentNumber = 1;
+            
+            // Reset existing numbers
+            for (let i = 0; i < placedWords.length; i++) {
+                delete placedWords[i].number;
+            }
+            
+            // Create a numbered version of the grid
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    if (grid[y][x] !== null) {
+                        let shouldNumberHorizontal = false;
+                        let shouldNumberVertical = false;
+                        
+                        // Check if this cell is the start of a horizontal word
+                        if (x === 0 || grid[y][x-1] === null) {
+                            if (x < width - 1 && grid[y][x+1] !== null) {
+                                shouldNumberHorizontal = true;
+                            }
+                        }
+                        
+                        // Check if this cell is the start of a vertical word
+                        if (y === 0 || grid[y-1][x] === null) {
+                            if (y < height - 1 && grid[y+1][x] !== null) {
+                                shouldNumberVertical = true;
+                            }
+                        }
+                        
+                        // If this cell should be numbered, find the corresponding words
+                        if (shouldNumberHorizontal || shouldNumberVertical) {
+                            // Number horizontal words
+                            if (shouldNumberHorizontal) {
+                                for (let i = 0; i < placedWords.length; i++) {
+                                    const word = placedWords[i];
+                                    if (word.horizontal && word.startX === x && word.startY === y) {
+                                        word.number = currentNumber;
+                                    }
+                                }
+                            }
+                            
+                            // Number vertical words
+                            if (shouldNumberVertical) {
+                                for (let i = 0; i < placedWords.length; i++) {
+                                    const word = placedWords[i];
+                                    if (!word.horizontal && word.startX === x && word.startY === y) {
+                                        word.number = currentNumber;
+                                    }
+                                }
+                            }
+                            
+                            currentNumber++;
+                        }
+                    }
+                }
+            }
+            
+            return grid;
+        }
+        
+        // Rendering functions
+        function renderCrossword(puzzle, showAnswers) {
+            const grid = puzzle.grid;
+            const height = grid.length;
+            const width = grid[0].length;
+            
+            let html = '<table class="crossword-grid">';
+            
+            for (let y = 0; y < height; y++) {
+                html += '<tr>';
+                
+                for (let x = 0; x < width; x++) {
+                    if (grid[y][x] === null) {
+                        html += '<td></td>';
+                    } else {
+                        // Check if this cell should have a number
+                        let cellNumber = '';
+                        
+                        if (isStartOfWord(grid, x, y)) {
+                            const number = getWordNumber(puzzle.placedWords, x, y);
+                            if (number) {
+                                cellNumber = `<span class="cell-number">${number}</span>`;
+                            }
+                        }
+                        
+                        // For answer key, show the letter. For worksheet, show empty cell
+                        const cellContent = showAnswers ? grid[y][x] : '';
+                        
+                        html += `<td class="crossword-cell">${cellNumber}${cellContent}</td>`;
+                    }
+                }
+                
+                html += '</tr>';
+            }
+            
+            html += '</table>';
+            
+            // Add clues
+            html += '<div class="clues-container">';
+            
+            // Across clues
+            if (puzzle.acrossClues.length > 0) {
+                html += '<div class="across-clues">';
+                html += '<div class="worksheet-heading">Across:</div>';
+                html += '<ol class="clue-list">';
+                
+                for (const clue of puzzle.acrossClues) {
+                    html += `<li class="clue-item"><strong>${clue.number}.</strong> ${clue.clue}</li>`;
+                }
+                
+                html += '</ol>';
+                html += '</div>';
+            }
+            
+            // Down clues
+            if (puzzle.downClues.length > 0) {
+                html += '<div class="down-clues">';
+                html += '<div class="worksheet-heading">Down:</div>';
+                html += '<ol class="clue-list">';
+                
+                for (const clue of puzzle.downClues) {
+                    html += `<li class="clue-item"><strong>${clue.number}.</strong> ${clue.clue}</li>`;
+                }
+                
+                html += '</ol>';
+                html += '</div>';
+            }
+            
+            html += '</div>';
+            
+            // Update the appropriate container
+            if (showAnswers) {
+                document.getElementById('answerKeyContainer').innerHTML = html;
+            } else {
+                document.getElementById('crosswordContainer').innerHTML = html;
+            }
+        }
+        
+        function isStartOfWord(grid, x, y) {
+            const height = grid.length;
+            const width = grid[0].length;
+            
+            // Check if this is a valid filled cell
+            if (grid[y][x] === null) {
+                return false;
+            }
+            
+            // Check if this is the start of a horizontal word
+            const isHorizontalStart = (x === 0 || grid[y][x-1] === null) && (x < width - 1 && grid[y][x+1] !== null);
+            
+            // Check if this is the start of a vertical word
+            const isVerticalStart = (y === 0 || grid[y-1][x] === null) && (y < height - 1 && grid[y+1][x] !== null);
+            
+            return isHorizontalStart || isVerticalStart;
+        }
+        
+        function getWordNumber(placedWords, x, y) {
+            for (let i = 0; i < placedWords.length; i++) {
+                const word = placedWords[i];
+                if (word.startX === x && word.startY === y) {
+                    return word.number;
+                }
+            }
+            return null;
+        }
+        
+        // Export functions
+        function printPuzzle() {
+            if (!generatedPuzzle) {
+                showNotification("Generate a puzzle first");
+                return;
+            }
+            
+            showPreviewTab('worksheet');
+            
+            // Wait a bit for the tab to update
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+        
+        function printAnswerKey() {
+            if (!generatedPuzzle) {
+                showNotification("Generate a puzzle first");
+                return;
+            }
+            
+            showPreviewTab('answerKey');
+            
+            // Wait a bit for the tab to update
+            setTimeout(() => {
+                window.print();
+            }, 100);
+        }
+    </script>
+</body>
+</html>
