@@ -36,11 +36,6 @@
       margin: 0;
       font-size: 2.2rem;
     }
-    h2 {
-      color: #444;
-      font-weight: normal;
-      margin: 0;
-    }
     .content {
       display: flex;
       margin-top: 30px;
@@ -75,7 +70,7 @@
     }
     .word-input {
       width: 100%;
-      height: 300px;
+      height: 350px; /* Increased height for more breathing room */
       padding: 10px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
@@ -148,22 +143,6 @@
     }
     .download-btn:hover {
       background-color: #005F6B;
-    }
-    .scramble-btn {
-      background-color: #f1f1f1;
-      border: 1px solid #ddd;
-      color: #666;
-      border-radius: 50px;
-      padding: 8px 15px;
-      margin-bottom: 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 14px;
-    }
-    .scramble-btn svg {
-      margin-right: 5px;
     }
     .notification {
       position: fixed;
@@ -302,6 +281,16 @@
       font-size: 14px;
       line-height: 1.4;
     }
+    
+    /* Footer with copyright */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 20px 0;
+      font-size: 12px;
+      color: #666;
+      border-top: 1px solid var(--border-color);
+    }
 
     /* PRINT STYLES */
     @media print {
@@ -316,8 +305,8 @@
         padding: 0;
         font-size: 10pt;
       }
-      .container, .input-section, .tabs, .scramble-btn, header,
-      .create-btn, .preview-tabs, .download-section, .page-preview {
+      .container, .input-section, .tabs, header,
+      .create-btn, .preview-tabs, .download-section, .page-preview, .footer {
         display: none !important;
       }
       .preview-section {
@@ -370,84 +359,18 @@
         font-size: 16pt;
         margin-bottom: 8mm;
       }
-      
-      /* PRINT PREVIEW MODE */
-      body.print-mode {
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      
-      body.print-mode * {
-        visibility: hidden;
-      }
-      
-      body.print-mode .pdf-export-container.active,
-      body.print-mode .pdf-export-container.active * {
-        visibility: visible !important;
-      }
-      
-      body.print-mode .container,
-      body.print-mode .input-section,
-      body.print-mode .preview-section,
-      body.print-mode .page-preview,
-      body.print-mode header {
-        display: none !important;
-      }
-      
-      body.print-mode .pdf-export-container.active {
-        display: block !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        height: auto !important;
-        visibility: visible !important;
-        overflow: visible !important;
-        padding: 20px !important;
-      }
-      
-      body.print-mode .pdf-export-container .preview-content {
-        display: block !important;
-        visibility: visible !important;
-        position: static !important;
-        transform: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-      }
-      
-      body.print-mode .pdf-export-container .crossword-grid-container {
-        display: flex !important;
-        justify-content: center !important;
-        margin-bottom: 20px !important;
-      }
-      
-      body.print-mode .pdf-export-container .clues-container {
-        display: block !important;
-        visibility: visible !important;
-        position: static !important;
-        column-count: 2 !important;
-        column-gap: 20px !important;
-        margin-top: 20px !important;
-      }
-      
-      body.print-mode .pdf-export-container .across-clues,
-      body.print-mode .pdf-export-container .down-clues {
-        break-inside: avoid !important;
-        display: block !important;
-      }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Crossword Puzzle</h1>
-      <h2>Reading worksheet generator</h2>
+      <h1>Crossword Puzzle Generator</h1>
     </header>
     <div class="content">
       <div class="input-section">
         <h3 class="section-title">Enter crossword puzzle content</h3>
-        <p class="help-text">See instructions below. Under 16 words is best for a single page.</p>
+        <p class="help-text">See instructions below. Under 20 words is best for a single page.</p>
         
         <div>
           <label for="puzzleTitle">Title</label>
@@ -491,18 +414,6 @@
           </div>
         </div>
         
-        <button class="scramble-btn">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-               viewBox="0 0 24 24" fill="none" stroke="currentColor"
-               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4
-                     A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4
-                     A2 2 0 0 0 21 16z"></path>
-            <path d="M12 22.5v-5.5m0 0l12-7m-24 0l12 7"></path>
-          </svg>
-          Scramble
-        </button>
-        
         <div class="download-section">
           <button class="download-btn" onclick="printPuzzle()">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -519,25 +430,13 @@
             </svg>
             Download Answer Key
           </button>
-          
-          <!-- New buttons for print preview -->
-          <button class="download-btn" onclick="printPreview(false)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-              <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
-            </svg>
-            Print Worksheet
-          </button>
-          
-          <button class="download-btn" onclick="printPreview(true)">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M2.5 8a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1z"/>
-              <path d="M5 1a2 2 0 0 0-2 2v2H2a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h1v1a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-1h1a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-1V3a2 2 0 0 0-2-2H5zM4 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2H4V3zm1 5a2 2 0 0 0-2 2v1H2a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v-1a2 2 0 0 0-2-2H5zm7 2v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1z"/>
-            </svg>
-            Print Answer Key
-          </button>
         </div>
       </div>
+    </div>
+    
+    <!-- Footer with copyright -->
+    <div class="footer">
+      made with ❤️ by Shandé
     </div>
   </div>
 
@@ -571,62 +470,6 @@ to rescue, to save someone from danger
 to survive, to continue to live after a dangerous situation`;
       }
     };
-
-    // Print preview function for browser printing
-    function printPreview(isAnswerKey) {
-      if (!generatedPuzzle) {
-        showNotification("Generate a puzzle first");
-        return;
-      }
-      
-      // Prepare content for printing
-      if (isAnswerKey) {
-        showPreviewTab('answerKey');
-        
-        // Make sure the answer key container is populated and visible
-        const pdfContainer = document.getElementById('pdfAnswerKeyContainer');
-        pdfContainer.classList.add('active');
-        
-        // Force clues visibility
-        const cluesContainer = pdfContainer.querySelector('.clues-container');
-        if (cluesContainer) {
-          cluesContainer.style.display = 'block';
-          cluesContainer.style.visibility = 'visible';
-          cluesContainer.style.position = 'static';
-          cluesContainer.style.height = 'auto';
-        }
-      } else {
-        showPreviewTab('worksheet');
-        
-        // Make sure the worksheet container is populated and visible
-        const pdfContainer = document.getElementById('pdfWorksheetContainer');
-        pdfContainer.classList.add('active');
-        
-        // Force clues visibility
-        const cluesContainer = pdfContainer.querySelector('.clues-container');
-        if (cluesContainer) {
-          cluesContainer.style.display = 'block';
-          cluesContainer.style.visibility = 'visible';
-          cluesContainer.style.position = 'static';
-          cluesContainer.style.height = 'auto';
-        }
-      }
-      
-      // Add a temporary class to document body for print
-      document.body.classList.add('print-mode');
-      
-      // Print the page
-      setTimeout(() => {
-        window.print();
-        
-        // Clean up after printing
-        setTimeout(() => {
-          document.body.classList.remove('print-mode');
-          document.getElementById('pdfWorksheetContainer').classList.remove('active');
-          document.getElementById('pdfAnswerKeyContainer').classList.remove('active');
-        }, 500);
-      }, 100);
-    }
 
     function showPreviewTab(tabName) {
       currentPreviewTab = tabName;
@@ -710,8 +553,8 @@ to survive, to continue to live after a dangerous situation`;
         showNotification("Please enter at least 3 terms with definitions");
         return null;
       }
-      if (words.length > 16) {
-        showNotification("Too many terms. Please limit to 16 for best layout.");
+      if (words.length > 20) { // Increased from 16 to 20
+        showNotification("Too many terms. Please limit to 20 for best layout.");
         return null;
       }
       return words;
