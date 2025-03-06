@@ -592,413 +592,423 @@ to survive, to continue to live after a dangerous situation`;
       }, 100);
     }
 
-   // Replace only this function in your code
-function createCrosswordGrid(words) {
-  // Sort words by length descending
-  words.sort((a, b) => b.word.length - a.word.length);
-  
-  // Try multiple layouts
-  let bestPuzzle = null;
-  let bestScore = -Infinity;
-  
-  const attempts = 5;
-  
-  // Attempt multiple layouts and choose the best one
-  for (let attempt = 0; attempt < attempts; attempt++) {
-    try {
-      // Try to create a puzzle with this attempt
-      const puzzle = attemptLayout(words, attempt);
+    // IMPROVED CROSSWORD ALGORITHM
+    function createCrosswordGrid(words) {
+      // Sort words by length descending
+      words.sort((a, b) => b.word.length - a.word.length);
       
-      if (puzzle) {
-        // Score the puzzle
-        const acrossCount = puzzle.acrossClues.length;
-        const downCount = puzzle.downClues.length;
-        const grid = puzzle.grid;
-        
-        // Calculate various scoring factors
-        const width = grid[0]?.length || 0;
-        const height = grid.length || 0;
-        const aspectRatio = width / height;
-        const squareness = Math.min(aspectRatio, 1/aspectRatio);
-        const balanceRatio = Math.min(acrossCount, downCount) / Math.max(acrossCount, downCount);
-        const placedWordsRatio = puzzle.placedWords.length / words.length;
-        
-        // Calculate overall score
-        const score = 
-          (placedWordsRatio * 100) +  // Word placement is most important
-          (squareness * 20) +        // How square the grid is
-          (balanceRatio * 30);       // Balance between across and down
-        
-        // Update best puzzle if better
-        if (score > bestScore) {
-          bestScore = score;
-          bestPuzzle = puzzle;
-        }
-      }
-    } catch (err) {
-      console.log("Layout attempt failed:", err);
-      // Continue to next attempt
-    }
-  }
-  
-  // If we found a good layout, return it
-  if (bestPuzzle && bestPuzzle.placedWords.length >= words.length * 0.7) {
-    return bestPuzzle;
-  }
-  
-  // Fall back to original algorithm if no good layouts were found
-  return createOriginalCrosswordGrid(words);
-}
-
-// The original algorithm as a fallback
-function createOriginalCrosswordGrid(words) {
-  const gridSize = calculateGridSize(words);
-  const grid = createEmptyGrid(gridSize);
-  const placedWords = [];
-
-  // Place first word in the middle horizontally
-  const firstWord = words[0];
-  const startX = Math.floor((gridSize - firstWord.word.length) / 2);
-  const startY = Math.floor(gridSize / 2);
-  placeWordOnGrid(grid, firstWord.word, startX, startY, true);
-  placedWords.push({
-    word: firstWord.word,
-    clue: firstWord.clue,
-    startX: startX,
-    startY: startY,
-    horizontal: true
-  });
-
-  // Attempt to place remaining
-  for (let i = 1; i < words.length; i++) {
-    const currentWord = words[i];
-    let placed = false;
-
-    for (let j = 0; j < placedWords.length && !placed; j++) {
-      const placedWord = placedWords[j];
-      // horizontal intersection
-      if (!placedWord.horizontal) {
-        for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
-          for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
-            if (currentWord.word[charIndex] === placedWord.word[pc]) {
-              const newX = placedWord.startX - charIndex;
-              const newY = placedWord.startY + pc;
-              if (canPlaceWord(grid, currentWord.word, newX, newY, true)) {
-                placeWordOnGrid(grid, currentWord.word, newX, newY, true);
-                placedWords.push({
-                  word: currentWord.word,
-                  clue: currentWord.clue,
-                  startX: newX,
-                  startY: newY,
-                  horizontal: true
-                });
-                placed = true;
-              }
-            }
-          }
-        }
-      }
-      // vertical intersection
-      if (placedWord.horizontal && !placed) {
-        for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
-          for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
-            if (currentWord.word[charIndex] === placedWord.word[pc]) {
-              const newX = placedWord.startX + pc;
-              const newY = placedWord.startY - charIndex;
-              if (canPlaceWord(grid, currentWord.word, newX, newY, false)) {
-                placeWordOnGrid(grid, currentWord.word, newX, newY, false);
-                placedWords.push({
-                  word: currentWord.word,
-                  clue: currentWord.clue,
-                  startX: newX,
-                  startY: newY,
-                  horizontal: false
-                });
-                placed = true;
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  
-  // Trim the grid
-  const trimmed = trimGrid(grid);
-  
-  // Adjust word positions based on the trimmed grid
-  const adjustX = trimmed.trimFromLeft;
-  const adjustY = trimmed.trimFromTop;
-  
-  for (let i = 0; i < placedWords.length; i++) {
-    placedWords[i].startX -= adjustX;
-    placedWords[i].startY -= adjustY;
-  }
-  
-  // Number the grid
-  numberGrid(trimmed.grid, placedWords);
-  
-  // Prepare clues
-  const acrossClues = [];
-  const downClues = [];
-  
-  for (let w of placedWords) {
-    if (w.horizontal) {
-      acrossClues.push({ number: w.number, clue: w.clue, word: w.word });
-    } else {
-      downClues.push({ number: w.number, clue: w.clue, word: w.word });
-    }
-  }
-  
-  acrossClues.sort((a, b) => a.number - b.number);
-  downClues.sort((a, b) => a.number - b.number);
-  
-  return {
-    grid: trimmed.grid,
-    placedWords: placedWords,
-    acrossClues,
-    downClues
-  };
-}
-
-// Create a single layout attempt
-function attemptLayout(words, attemptNumber) {
-  const gridSize = calculateGridSize(words);
-  const grid = createEmptyGrid(gridSize);
-  const placedWords = [];
-  
-  // Choose whether to place first word horizontally or vertically
-  // Alternate for different attempts
-  const firstWordHorizontal = attemptNumber % 2 === 0;
-  
-  // Place first word
-  const firstWord = words[0];
-  const startX = Math.floor((gridSize - firstWord.word.length) / 2);
-  const startY = Math.floor(gridSize / 2);
-  
-  placeWordOnGrid(grid, firstWord.word, startX, startY, firstWordHorizontal);
-  placedWords.push({
-    word: firstWord.word,
-    clue: firstWord.clue,
-    startX: startX,
-    startY: startY,
-    horizontal: firstWordHorizontal
-  });
-  
-  // Track direction counts
-  let acrossCount = firstWordHorizontal ? 1 : 0;
-  let downCount = firstWordHorizontal ? 0 : 1;
-  
-  // Shuffle remaining words to promote variety
-  const remainingWords = words.slice(1).sort(() => Math.random() - 0.5);
-  
-  // For each remaining word
-  for (const currentWord of remainingWords) {
-    let placed = false;
-    
-    // Determine which direction to prioritize based on current balance
-    const preferHorizontal = acrossCount < downCount;
-    
-    // Try to place in preferred direction first
-    if (preferHorizontal) {
-      placed = tryToPlaceWord(grid, currentWord, placedWords, true);
-      if (placed) {
-        acrossCount++;
-        placedWords.push({
-          word: currentWord.word,
-          clue: currentWord.clue,
-          startX: placed.x,
-          startY: placed.y,
-          horizontal: true
-        });
-        continue;
-      }
+      // IMPROVEMENT 1: Try multiple layouts and score them
+      const attempts = 8; // Generate 8 different layouts
+      let bestLayout = null;
+      let bestScore = -Infinity;
       
-      // Try opposite direction
-      placed = tryToPlaceWord(grid, currentWord, placedWords, false);
-      if (placed) {
-        downCount++;
-        placedWords.push({
-          word: currentWord.word,
-          clue: currentWord.clue,
-          startX: placed.x,
-          startY: placed.y,
-          horizontal: false
-        });
-      }
-    } else {
-      // Try vertical first
-      placed = tryToPlaceWord(grid, currentWord, placedWords, false);
-      if (placed) {
-        downCount++;
-        placedWords.push({
-          word: currentWord.word,
-          clue: currentWord.clue,
-          startX: placed.x,
-          startY: placed.y,
-          horizontal: false
-        });
-        continue;
-      }
-      
-      // Try horizontal
-      placed = tryToPlaceWord(grid, currentWord, placedWords, true);
-      if (placed) {
-        acrossCount++;
-        placedWords.push({
-          word: currentWord.word,
-          clue: currentWord.clue,
-          startX: placed.x,
-          startY: placed.y,
-          horizontal: true
-        });
-      }
-    }
-  }
-  
-  // If we didn't place enough words, this layout isn't good
-  if (placedWords.length < words.length * 0.7) {
-    return null;
-  }
-  
-  // Trim the grid
-  const trimmed = trimGrid(grid);
-  
-  // Adjust word positions based on the trimmed grid
-  const adjustX = trimmed.trimFromLeft;
-  const adjustY = trimmed.trimFromTop;
-  
-  for (let i = 0; i < placedWords.length; i++) {
-    placedWords[i].startX -= adjustX;
-    placedWords[i].startY -= adjustY;
-  }
-  
-  // Number the grid
-  numberGrid(trimmed.grid, placedWords);
-  
-  // Prepare clues
-  const acrossClues = [];
-  const downClues = [];
-  
-  for (let w of placedWords) {
-    if (w.horizontal) {
-      acrossClues.push({ number: w.number, clue: w.clue, word: w.word });
-    } else {
-      downClues.push({ number: w.number, clue: w.clue, word: w.word });
-    }
-  }
-  
-  acrossClues.sort((a, b) => a.number - b.number);
-  downClues.sort((a, b) => a.number - b.number);
-  
-  return {
-    grid: trimmed.grid,
-    placedWords: placedWords,
-    acrossClues,
-    downClues
-  };
-}
-
-// Simplified helper to try placing a word
-function tryToPlaceWord(grid, currentWord, placedWords, horizontal) {
-  // Sort placed words to prioritize opposite orientation words first
-  const sortedPlacedWords = [...placedWords].sort((a, b) => {
-    if (a.horizontal === horizontal && b.horizontal !== horizontal) return 1;
-    if (a.horizontal !== horizontal && b.horizontal === horizontal) return -1;
-    return 0;
-  });
-  
-  // Try each placed word
-  for (const placedWord of sortedPlacedWords) {
-    // Find all possible intersections
-    for (let i = 0; i < currentWord.word.length; i++) {
-      for (let j = 0; j < placedWord.word.length; j++) {
-        if (currentWord.word[i] === placedWord.word[j]) {
-          // Calculate position based on intersection
-          let newX, newY;
+      for (let attempt = 0; attempt < attempts; attempt++) {
+        try {
+          const layout = generateLayout(words, attempt);
+          if (!layout) continue; // Skip if the layout couldn't be generated
           
-          if (horizontal) {
-            newX = placedWord.startX + (placedWord.horizontal ? j : 0) - i;
-            newY = placedWord.startY + (placedWord.horizontal ? 0 : j);
-          } else {
-            newX = placedWord.startX + (placedWord.horizontal ? j : 0);
-            newY = placedWord.startY + (placedWord.horizontal ? 0 : j) - i;
+          const score = scoreLayout(layout);
+          if (score > bestScore) {
+            bestScore = score;
+            bestLayout = layout;
           }
-          
-          // Check if we can place here
-          if (canPlaceWord(grid, currentWord.word, newX, newY, horizontal)) {
-            placeWordOnGrid(grid, currentWord.word, newX, newY, horizontal);
-            return { x: newX, y: newY };
-          }
-        }
-      }
-    }
-  }
-  
-  return false;
-}
-    // Find all possible intersections between two words
-    function findIntersections(currentWord, placedWord) {
-      const intersections = [];
-      
-      for (let i = 0; i < currentWord.length; i++) {
-        for (let j = 0; j < placedWord.word.length; j++) {
-          if (currentWord[i] === placedWord.word[j]) {
-            intersections.push({
-              currentIndex: i,
-              placedIndex: j
-            });
-          }
+        } catch (e) {
+          console.log("Layout attempt failed:", e);
+          // Continue to next attempt
         }
       }
       
-      return intersections;
+      // If we found a good layout, use it
+      if (bestLayout && bestLayout.placedWords.length >= Math.min(words.length * 0.8, words.length)) {
+        return bestLayout;
+      }
+      
+      // Fallback to original algorithm if no good layout was found
+      return generateOriginalLayout(words);
     }
-
+    
+    // IMPROVEMENT 3: Score a layout based on multiple factors
+    function scoreLayout(layout) {
+      // Count across and down words
+      let acrossCount = 0;
+      let downCount = 0;
+      layout.placedWords.forEach(word => {
+        if (word.horizontal) acrossCount++;
+        else downCount++;
+      });
+      
+      // Calculate grid dimensions
+      const height = layout.grid.length;
+      const width = layout.grid[0].length;
+      
+      // Calculate aspect ratio and how "square" the grid is
+      const aspectRatio = width / height;
+      const squareness = Math.min(aspectRatio, 1/aspectRatio); // 1.0 is perfectly square
+      
+      // Calculate balance between across and down words
+      const directionBalance = Math.min(acrossCount, downCount) / Math.max(acrossCount, downCount);
+      
+      // Calculate percentage of words placed
+      const wordPlacementRatio = layout.placedWords.length / layout.totalWords;
+      
+      // Calculate intersections density (intersections per word)
+      let intersections = 0;
+      for (let i = 0; i < layout.placedWords.length; i++) {
+        for (let j = i + 1; j < layout.placedWords.length; j++) {
+          if (wordsIntersect(layout.placedWords[i], layout.placedWords[j])) {
+            intersections++;
+          }
+        }
+      }
+      const intersectionDensity = intersections / Math.max(1, layout.placedWords.length);
+      
+      // Calculate overall score
+      return (wordPlacementRatio * 40) + // Weight of word placement
+             (squareness * 30) +          // Weight of grid shape
+             (directionBalance * 20) +    // Weight of direction balance
+             (intersectionDensity * 10);  // Weight of intersections
+    }
+    
     // Check if two words intersect
-    function doWordsIntersect(word1, word2) {
-      // Words with the same orientation don't intersect
-      if (word1.horizontal === word2.horizontal) {
-        return false;
+    function wordsIntersect(word1, word2) {
+      // Words with same orientation can't intersect
+      if (word1.horizontal === word2.horizontal) return false;
+      
+      const horizontal = word1.horizontal ? word1 : word2;
+      const vertical = word1.horizontal ? word2 : word1;
+      
+      // Check if the horizontal word crosses the vertical word
+      return horizontal.startX <= vertical.startX && 
+             horizontal.startX + horizontal.word.length > vertical.startX &&
+             vertical.startY <= horizontal.startY &&
+             vertical.startY + vertical.word.length > horizontal.startY;
+    }
+    
+    // Generate a layout with the given words
+    function generateLayout(words, attemptNumber) {
+      const gridSize = calculateGridSize(words);
+      const grid = createEmptyGrid(gridSize);
+      const placedWords = [];
+      
+      // IMPROVEMENT 2 & 4: Track direction balance and vary first word orientation
+      let acrossCount = 0;
+      let downCount = 0;
+      
+      // Alternate between horizontal and vertical for the first word
+      const firstWordHorizontal = attemptNumber % 2 === 0;
+      
+      // Place first word
+      const firstWord = words[0];
+      const startX = Math.floor((gridSize - firstWord.word.length) / 2);
+      const startY = Math.floor(gridSize / 2);
+      
+      placeWordOnGrid(grid, firstWord.word, startX, startY, firstWordHorizontal);
+      placedWords.push({
+        word: firstWord.word,
+        clue: firstWord.clue,
+        startX: startX,
+        startY: startY,
+        horizontal: firstWordHorizontal
+      });
+      
+      if (firstWordHorizontal) acrossCount++;
+      else downCount++;
+      
+      // Add randomness by shuffling the word order for each attempt
+      const remainingWords = [...words.slice(1)];
+      if (attemptNumber > 0) {
+        // Use a different shuffle pattern for each attempt
+        for (let i = 0; i < attemptNumber; i++) {
+          remainingWords.sort(() => Math.random() - 0.5);
+        }
       }
       
-      // Calculate the bounds of each word
-      const word1XStart = word1.startX;
-      const word1XEnd = word1.horizontal ? word1.startX + word1.word.length - 1 : word1.startX;
-      const word1YStart = word1.startY;
-      const word1YEnd = word1.horizontal ? word1.startY : word1.startY + word1.word.length - 1;
-      
-      const word2XStart = word2.startX;
-      const word2XEnd = word2.horizontal ? word2.startX + word2.word.length - 1 : word2.startX;
-      const word2YStart = word2.startY;
-      const word2YEnd = word2.horizontal ? word2.startY : word2.startY + word2.word.length - 1;
-      
-      // Check if the words' bounds overlap
-      if (word1XStart <= word2XEnd && word1XEnd >= word2XStart &&
-          word1YStart <= word2YEnd && word1YEnd >= word2YStart) {
+      // Try to place each remaining word
+      for (let i = 0; i < remainingWords.length; i++) {
+        const currentWord = remainingWords[i];
+        let placementFound = false;
         
-        // Find the intersection point
-        let intersectX, intersectY;
+        // IMPROVEMENT 2: Balance across and down words
+        const preferHorizontal = acrossCount <= downCount;
         
-        if (word1.horizontal) {
-          intersectX = word2.startX;
-          intersectY = word1.startY;
-        } else {
-          intersectX = word1.startX;
-          intersectY = word2.startY;
+        // Get all possible placements
+        const possiblePlacements = findPossiblePlacements(grid, currentWord, placedWords, preferHorizontal);
+        
+        if (possiblePlacements.length > 0) {
+          // IMPROVEMENT 5: Sort placements by intersection quality
+          possiblePlacements.sort((a, b) => b.score - a.score);
+          
+          // Use the best placement
+          const bestPlacement = possiblePlacements[0];
+          placeWordOnGrid(grid, currentWord.word, bestPlacement.x, bestPlacement.y, bestPlacement.horizontal);
+          placedWords.push({
+            word: currentWord.word,
+            clue: currentWord.clue,
+            startX: bestPlacement.x,
+            startY: bestPlacement.y,
+            horizontal: bestPlacement.horizontal
+          });
+          
+          if (bestPlacement.horizontal) acrossCount++;
+          else downCount++;
+          
+          placementFound = true;
         }
         
-        // Calculate index into each word at the intersection
-        const word1Index = word1.horizontal ? intersectX - word1.startX : intersectY - word1.startY;
-        const word2Index = word2.horizontal ? intersectX - word2.startX : intersectY - word2.startY;
-        
-        // Check if the letters match at the intersection
-        return word1Index >= 0 && word1Index < word1.word.length && 
-               word2Index >= 0 && word2Index < word2.word.length && 
-               word1.word[word1Index] === word2.word[word2Index];
+        // If no placement found, move to the next word
+        if (!placementFound) {
+          continue;
+        }
       }
       
-      return false;
+      // Trim the grid to remove empty space
+      const trimmed = trimGrid(grid);
+      
+      // Adjust word positions based on the trimmed grid
+      const adjustX = trimmed.trimFromLeft;
+      const adjustY = trimmed.trimFromTop;
+      
+      for (let i = 0; i < placedWords.length; i++) {
+        placedWords[i].startX -= adjustX;
+        placedWords[i].startY -= adjustY;
+      }
+      
+      // Number the grid
+      numberGrid(trimmed.grid, placedWords);
+      
+      // Separate clues into across and down
+      const acrossClues = [];
+      const downClues = [];
+      
+      for (let w of placedWords) {
+        if (w.horizontal) {
+          acrossClues.push({ number: w.number, clue: w.clue, word: w.word });
+        } else {
+          downClues.push({ number: w.number, clue: w.clue, word: w.word });
+        }
+      }
+      
+      acrossClues.sort((a, b) => a.number - b.number);
+      downClues.sort((a, b) => a.number - b.number);
+      
+      return {
+        grid: trimmed.grid,
+        placedWords: placedWords,
+        acrossClues,
+        downClues,
+        totalWords: words.length
+      };
+    }
+    
+    // Find all possible placements for a word
+    function findPossiblePlacements(grid, currentWord, placedWords, preferHorizontal) {
+      const possiblePlacements = [];
+      
+      // Try both orientations, but prioritize the preferred one
+      const orientations = preferHorizontal ? 
+            [{ horizontal: true }, { horizontal: false }] : 
+            [{ horizontal: false }, { horizontal: true }];
+      
+      for (const orientation of orientations) {
+        for (const placedWord of placedWords) {
+          // Skip words with the same orientation if we're trying to balance
+          if (placedWord.horizontal === orientation.horizontal && 
+              (orientation.horizontal ? placedWords.filter(w => w.horizontal).length > placedWords.filter(w => !w.horizontal).length : 
+                                        placedWords.filter(w => !w.horizontal).length > placedWords.filter(w => w.horizontal).length)) {
+            continue;
+          }
+          
+          for (let i = 0; i < currentWord.word.length; i++) {
+            for (let j = 0; j < placedWord.word.length; j++) {
+              if (currentWord.word[i] === placedWord.word[j]) {
+                let x, y;
+                
+                if (orientation.horizontal) {
+                  x = placedWord.startX + (placedWord.horizontal ? j : 0) - i;
+                  y = placedWord.startY + (placedWord.horizontal ? 0 : j);
+                } else {
+                  x = placedWord.startX + (placedWord.horizontal ? j : 0);
+                  y = placedWord.startY + (placedWord.horizontal ? 0 : j) - i;
+                }
+                
+                if (canPlaceWord(grid, currentWord.word, x, y, orientation.horizontal)) {
+                  // Calculate a score for this placement
+                  const potentialScore = calculatePlacementScore(grid, currentWord.word, x, y, orientation.horizontal, placedWords);
+                  
+                  possiblePlacements.push({
+                    x,
+                    y,
+                    horizontal: orientation.horizontal,
+                    score: potentialScore,
+                    intersectionPoint: { wordIndex: i, placedWordIndex: j }
+                  });
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      return possiblePlacements;
+    }
+    
+    // Calculate a score for a potential word placement
+    function calculatePlacementScore(grid, word, startX, startY, horizontal, placedWords) {
+      let score = 0;
+      
+      // Score for number of intersections
+      for (let i = 0; i < word.length; i++) {
+        const x = horizontal ? startX + i : startX;
+        const y = horizontal ? startY : startY + i;
+        
+        // If this position already has a letter, it's an intersection
+        if (grid[y] && grid[y][x] === word[i]) {
+          score += 5; // Bonus for each intersection
+        }
+      }
+      
+      // Penalty for expanding the grid too much
+      const currentMaxX = Math.max(...placedWords.map(w => w.horizontal ? w.startX + w.word.length - 1 : w.startX));
+      const currentMaxY = Math.max(...placedWords.map(w => w.horizontal ? w.startY : w.startY + w.word.length - 1));
+      const currentMinX = Math.min(...placedWords.map(w => w.startX));
+      const currentMinY = Math.min(...placedWords.map(w => w.startY));
+      
+      const newMaxX = horizontal ? startX + word.length - 1 : startX;
+      const newMaxY = horizontal ? startY : startY + word.length - 1;
+      
+      // Calculate how much this placement expands the grid
+      const expansion = Math.max(0, newMaxX - currentMaxX) + Math.max(0, newMaxY - currentMaxY) + 
+                        Math.max(0, currentMinX - startX) + Math.max(0, currentMinY - startY);
+      
+      score -= expansion; // Penalty for expanding the grid
+      
+      // Bonus for placements that help balance the grid shape
+      const currentWidth = currentMaxX - currentMinX + 1;
+      const currentHeight = currentMaxY - currentMinY + 1;
+      const currentRatio = currentWidth / currentHeight;
+      
+      const newWidth = Math.max(currentMaxX, newMaxX) - Math.min(currentMinX, startX) + 1;
+      const newHeight = Math.max(currentMaxY, newMaxY) - Math.min(currentMinY, startY) + 1;
+      const newRatio = newWidth / newHeight;
+      
+      // If the new ratio is closer to 1 (more square), give a bonus
+      if (Math.abs(newRatio - 1) < Math.abs(currentRatio - 1)) {
+        score += 3;
+      }
+      
+      return score;
+    }
+    
+    // Original layout generation for fallback
+    function generateOriginalLayout(words) {
+      const gridSize = calculateGridSize(words);
+      const grid = createEmptyGrid(gridSize);
+      const placedWords = [];
+
+      // Place first word in the middle horizontally
+      const firstWord = words[0];
+      const startX = Math.floor((gridSize - firstWord.word.length) / 2);
+      const startY = Math.floor(gridSize / 2);
+      placeWordOnGrid(grid, firstWord.word, startX, startY, true);
+      placedWords.push({
+        word: firstWord.word,
+        clue: firstWord.clue,
+        startX: startX,
+        startY: startY,
+        horizontal: true
+      });
+
+      // Attempt to place remaining
+      for (let i = 1; i < words.length; i++) {
+        const currentWord = words[i];
+        let placed = false;
+
+        for (let j = 0; j < placedWords.length && !placed; j++) {
+          const placedWord = placedWords[j];
+          // horizontal intersection
+          if (!placedWord.horizontal) {
+            for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
+              for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
+                if (currentWord.word[charIndex] === placedWord.word[pc]) {
+                  const newX = placedWord.startX - charIndex;
+                  const newY = placedWord.startY + pc;
+                  if (canPlaceWord(grid, currentWord.word, newX, newY, true)) {
+                    placeWordOnGrid(grid, currentWord.word, newX, newY, true);
+                    placedWords.push({
+                      word: currentWord.word,
+                      clue: currentWord.clue,
+                      startX: newX,
+                      startY: newY,
+                      horizontal: true
+                    });
+                    placed = true;
+                  }
+                }
+              }
+            }
+          }
+          // vertical intersection
+          if (placedWord.horizontal && !placed) {
+            for (let charIndex = 0; charIndex < currentWord.word.length && !placed; charIndex++) {
+              for (let pc = 0; pc < placedWord.word.length && !placed; pc++) {
+                if (currentWord.word[charIndex] === placedWord.word[pc]) {
+                  const newX = placedWord.startX + pc;
+                  const newY = placedWord.startY - charIndex;
+                  if (canPlaceWord(grid, currentWord.word, newX, newY, false)) {
+                    placeWordOnGrid(grid, currentWord.word, newX, newY, false);
+                    placedWords.push({
+                      word: currentWord.word,
+                      clue: currentWord.clue,
+                      startX: newX,
+                      startY: newY,
+                      horizontal: false
+                    });
+                    placed = true;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      
+      // Trim the grid
+      const trimmed = trimGrid(grid);
+      
+      // Adjust word positions based on the trimmed grid
+      const adjustX = trimmed.trimFromLeft;
+      const adjustY = trimmed.trimFromTop;
+      
+      for (let i = 0; i < placedWords.length; i++) {
+        placedWords[i].startX -= adjustX;
+        placedWords[i].startY -= adjustY;
+      }
+      
+      // Number the grid
+      numberGrid(trimmed.grid, placedWords);
+      
+      // Prepare clues
+      const acrossClues = [];
+      const downClues = [];
+      
+      for (let w of placedWords) {
+        if (w.horizontal) {
+          acrossClues.push({ number: w.number, clue: w.clue, word: w.word });
+        } else {
+          downClues.push({ number: w.number, clue: w.clue, word: w.word });
+        }
+      }
+      
+      acrossClues.sort((a, b) => a.number - b.number);
+      downClues.sort((a, b) => a.number - b.number);
+      
+      return {
+        grid: trimmed.grid,
+        placedWords: placedWords,
+        acrossClues,
+        downClues,
+        totalWords: words.length
+      };
     }
 
     function calculateGridSize(words) {
@@ -1041,9 +1051,46 @@ function tryToPlaceWord(grid, currentWord, placedWords, horizontal) {
         }
         if (grid[y][x] === word[i]) {
           hasIntersection = true;
+        } else {
+          // Check adjacent cells (no adjacent letters allowed unless at intersection)
+          if (horizontal) {
+            // Check above
+            if (y > 0 && grid[y-1][x] !== null) {
+              return false;
+            }
+            // Check below
+            if (y < gridSize - 1 && grid[y+1][x] !== null) {
+              return false;
+            }
+            // Check before word start
+            if (i === 0 && x > 0 && grid[y][x-1] !== null) {
+              return false;
+            }
+            // Check after word end
+            if (i === word.length - 1 && x < gridSize - 1 && grid[y][x+1] !== null) {
+              return false;
+            }
+          } else {
+            // Check left
+            if (x > 0 && grid[y][x-1] !== null) {
+              return false;
+            }
+            // Check right
+            if (x < gridSize - 1 && grid[y][x+1] !== null) {
+              return false;
+            }
+            // Check before word start
+            if (i === 0 && y > 0 && grid[y-1][x] !== null) {
+              return false;
+            }
+            // Check after word end
+            if (i === word.length - 1 && y < gridSize - 1 && grid[y+1][x] !== null) {
+              return false;
+            }
+          }
         }
       }
-      // must intersect or be first word
+      // Word must have at least one intersection with existing words
       return hasIntersection || (startX === Math.floor((gridSize - word.length) / 2)
              && startY === Math.floor(gridSize / 2));
     }
