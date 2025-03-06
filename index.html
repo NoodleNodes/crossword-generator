@@ -115,6 +115,7 @@
       border-radius: 4px;
       padding: 20px;
       text-align: center;
+      margin: 0 auto; /* Added to center */
     }
     .preview-title {
       margin-bottom: 25px;
@@ -229,6 +230,7 @@
       display: flex;
       justify-content: center;
       margin-bottom: 20px;
+      width: 100%; /* Ensure full width */
     }
     .crossword-grid {
       border-collapse: collapse;
@@ -267,11 +269,12 @@
       flex-wrap: wrap;
       gap: 40px;
       text-align: left;
-      justify-content: center;
+      justify-content: space-between; /* Changed from center to space-between */
     }
     .across-clues, .down-clues {
       flex: 1;
       min-width: 250px;
+      max-width: 45%; /* Ensures neither column gets too wide */
     }
     .clue-list {
       list-style-type: none;
