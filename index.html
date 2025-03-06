@@ -272,19 +272,24 @@
       font-weight: bold;
       font-size: 16px;
     }
-
-    /* Clues side-by-side for preview AND PDF */
     .clues-container {
-      display: flex !important;
-      flex-direction: row !important;
-      flex-wrap: nowrap !important;
-      justify-content: space-between;
-      column-gap: 1rem; /* or 2rem, as you like */
-    }
-    .across-clues, .down-clues {
-      width: 45%;
-      text-align: left;
-    }
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: space-between;
+  column-gap: 1rem; /* optional */
+}
+.across-clues, .down-clues {
+  width: 45%;
+  /* or flex: 1; if you prefer auto sizing */
+}
+.across-clues,
+.down-clues,
+.clue-list,
+.clue-item {
+  text-align: left !important;
+}
+
     .clue-list {
       list-style-type: none;
       padding-left: 0;
@@ -339,7 +344,7 @@
         margin-bottom: 5mm !important;
       }
       .pdf-export-container .crossword-cell {
-        width: 7mm; /* Shrink if needed */
+        width: 7mm; /* Shrink if you need everything to fit on one page */
         height: 7mm;
         border: 0.5pt solid black !important;
         font-size: 12pt;
@@ -348,12 +353,13 @@
         font-size: 6pt;
       }
 
-      /* Force side-by-side clues in PDF */
+      /* Force side-by-side clues (flex row) in PDF: */
       .pdf-export-container .clues-container {
         display: flex !important;
         flex-direction: row !important;
         justify-content: space-between !important;
         column-gap: 1rem;
+        /* Removing these helps keep on one page */
         flex-wrap: nowrap !important;
         margin-top: 3mm !important;
         page-break-before: avoid !important;
@@ -364,6 +370,7 @@
         width: 45%;
         page-break-inside: avoid !important;
       }
+      
       .pdf-export-container .worksheet-heading {
         font-size: 12pt;
         margin-bottom: 4mm;
@@ -371,6 +378,12 @@
       .pdf-export-container .preview-title {
         font-size: 16pt;
         margin-bottom: 8mm;
+      }
+      .clues-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    column-gap: 2rem; /* or something similar */
       }
     }
   </style>
@@ -447,7 +460,7 @@
       </div>
     </div>
     
-    <!-- Footer -->
+    <!-- Footer with brand/copyright -->
     <div class="footer">
       made with ❤️ by Shandé
     </div>
@@ -662,10 +675,7 @@ to survive, to continue to live after a dangerous situation`;
       }
       const intersectionDensity = intersections / Math.max(1, layout.placedWords.length);
       
-      return (wordPlacementRatio * 40)
-           + (squareness * 30)
-           + (directionBalance * 20)
-           + (intersectionDensity * 10);
+      return (wordPlacementRatio * 40) + (squareness * 30) + (directionBalance * 20) + (intersectionDensity * 10);
     }
     
     function wordsIntersect(word1, word2) {
@@ -702,7 +712,6 @@ to survive, to continue to live after a dangerous situation`;
       
       const remainingWords = [...words.slice(1)];
       if (attemptNumber > 0) {
-        // shuffle approach
         for (let i = 0; i < attemptNumber; i++) {
           remainingWords.sort(() => Math.random() - 0.5);
         }
@@ -952,11 +961,8 @@ to survive, to continue to live after a dangerous situation`;
       return g;
     }
 
-    // ---------- Updated canPlaceWord function -------------
     function canPlaceWord(grid, word, startX, startY, horizontal) {
       const gridSize = grid.length;
-
-      // Check basic bounds
       if (horizontal) {
         if (startX < 0 || startX + word.length > gridSize || startY < 0 || startY >= gridSize) {
           return false;
@@ -966,52 +972,33 @@ to survive, to continue to live after a dangerous situation`;
           return false;
         }
       }
-
       let hasIntersection = false;
-
       for (let i = 0; i < word.length; i++) {
         const x = horizontal ? startX + i : startX;
         const y = horizontal ? startY : startY + i;
-        const letter = word[i];
-
-        // If grid cell has a different letter, fail
-        if (grid[y][x] !== null && grid[y][x] !== letter) {
+        if (grid[y][x] !== null && grid[y][x] !== word[i]) {
           return false;
         }
-
-        // If it matches, we have an intersection
-        if (grid[y][x] === letter) {
+        if (grid[y][x] === word[i]) {
           hasIntersection = true;
         } else {
-          // Null cell, so check adjacency for no collisions
           if (horizontal) {
-            // Check above/below
-            if (y > 0 && grid[y - 1][x] !== null) return false;
-            if (y < gridSize - 1 && grid[y + 1][x] !== null) return false;
-            // Check left edge if it's the first letter
-            if (i === 0 && x > 0 && grid[y][x - 1] !== null) return false;
-            // Check right edge if it's the last letter
-            if (i === word.length - 1 && x < gridSize - 1 && grid[y][x + 1] !== null) return false;
+            if (y > 0 && grid[y-1][x] !== null) return false;
+            if (y < gridSize - 1 && grid[y+1][x] !== null) return false;
+            if (i === 0 && x > 0 && grid[y][x-1] !== null) return false;
+            if (i === word.length - 1 && x < gridSize - 1 && grid[y][x+1] !== null) return false;
           } else {
-            // If vertical, check left/right
-            if (x > 0 && grid[y][x - 1] !== null) return false;
-            if (x < gridSize - 1 && grid[y][x + 1] !== null) return false;
-            // Check above if it's the first letter
-            if (i === 0 && y > 0 && grid[y - 1][x] !== null) return false;
-            // Check below if it's the last letter
-            if (i === word.length - 1 && y < gridSize - 1 && grid[y + 1][x] !== null) return false;
+            if (x > 0 && grid[y][x-1] !== null) return false;
+            if (x < gridSize - 1 && grid[y][x+1] !== null) return false;
+            if (i === 0 && y > 0 && grid[y-1][x] !== null) return false;
+            if (i === word.length - 1 && y < gridSize - 1 && grid[y+1][x] !== null) return false;
           }
         }
       }
-
-      // If it's not the first word, we need at least one actual intersection
-      const isFirstWordCentered =
-        (startX === Math.floor((gridSize - word.length) / 2)) &&
-        (startY === Math.floor(gridSize / 2));
-
-      return hasIntersection || isFirstWordCentered;
+      return hasIntersection 
+             || (startX === Math.floor((gridSize - word.length) / 2)
+                 && startY === Math.floor(gridSize / 2));
     }
-    // ------------------------------------------------------
 
     function placeWordOnGrid(grid, word, startX, startY, horizontal) {
       for (let i = 0; i < word.length; i++) {
