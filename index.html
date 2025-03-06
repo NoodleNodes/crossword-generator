@@ -8,9 +8,11 @@
     :root {
       --primary-color: #00BCD4;
       --secondary-color: #007A87;
-      --light-gray: #f3f3f3;
+      --light-gray: #f5f5f5;
       --dark-gray: #333;
       --border-color: #ddd;
+      --accent-color: #10B9AD; /* Education.com teal color */
+      --green-border: #2A9D8F; /* Border color for worksheets */
     }
     * {
       box-sizing: border-box;
@@ -32,9 +34,16 @@
       border-bottom: 1px solid var(--border-color);
     }
     h1 {
-      color: var(--primary-color);
+      color: var(--accent-color);
       margin: 0;
       font-size: 2.2rem;
+    }
+    h2 {
+      color: #555;
+      font-size: 1.8rem;
+      font-weight: normal;
+      margin-top: 0.5rem;
+      margin-bottom: 2rem;
     }
     .content {
       display: flex;
@@ -42,18 +51,19 @@
       gap: 40px;
     }
     .input-section {
-      flex: 6; /* Changed from 1 to 6 to give more space */
+      flex: 6;
     }
     .preview-section {
-      flex: 5; /* Changed from 1 to 5 */
-      background-color: white;
+      flex: 5;
+      background-color: var(--light-gray);
       padding: 20px;
       border-radius: 4px;
       position: relative;
     }
     .section-title {
       font-size: 1.5rem;
-      margin-bottom: 10px;
+      margin-bottom: 15px;
+      color: #444;
     }
     .help-text {
       margin-bottom: 20px;
@@ -62,7 +72,7 @@
     }
     .title-input {
       width: 100%;
-      padding: 10px;
+      padding: 12px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
       margin-bottom: 20px;
@@ -70,39 +80,39 @@
     }
     .word-input {
       width: 100%;
-      height: 400px; /* Increased from 350px */
-      padding: 15px; /* Increased from 10px */
+      height: 400px;
+      padding: 15px;
       border: 1px solid var(--border-color);
       border-radius: 4px;
       resize: vertical;
-      font-size: 15px; /* Increased from 14px */
+      font-size: 15px;
       font-family: monospace;
-      line-height: 1.5; /* Added for better spacing */
+      line-height: 1.5;
     }
     .create-btn {
-      background-color: var(--secondary-color);
+      background-color: var(--accent-color);
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 10px 25px;
+      padding: 12px 25px;
       cursor: pointer;
       font-size: 16px;
       margin-top: 20px;
       float: right;
+      transition: background-color 0.2s;
     }
     .create-btn:hover {
-      background-color: #005F6B;
+      opacity: 0.9;
     }
     .preview-tabs {
       display: flex;
-      margin-bottom: 20px;
+      margin-bottom: 0;
     }
     .preview-tab {
-      padding: 8px 20px;
+      padding: 10px 25px;
       cursor: pointer;
       background-color: #e0e0e0;
       border: none;
-      margin-right: 5px;
       font-weight: bold;
       font-size: 14px;
       border-radius: 3px 3px 0 0;
@@ -115,42 +125,52 @@
       border-radius: 4px;
       padding: 20px;
       text-align: center;
-      margin: 0 auto; /* Added to center */
+      margin: 0 auto;
+    }
+    .worksheet-container {
+      border: 2px solid var(--green-border);
+      padding: 20px;
+      border-radius: 4px;
+      background-color: white;
+      display: inline-block;
+      min-width: 80%;
+      margin: 0 auto;
     }
     .preview-title {
       margin-bottom: 25px;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
+      text-align: center;
     }
     .download-section {
       margin-top: 20px;
     }
     .download-btn {
-      background-color: var(--secondary-color);
+      background-color: #4A6FDE; /* Education.com blue color for buttons */
       color: white;
       border: none;
       border-radius: 4px;
-      padding: 10px 15px;
+      padding: 12px 15px;
       cursor: pointer;
       margin: 5px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
       width: 100%;
       text-align: center;
       font-size: 14px;
+      transition: background-color 0.2s;
+      font-weight: bold;
     }
     .download-btn svg {
       margin-right: 5px;
     }
     .download-btn:hover {
-      background-color: #005F6B;
+      opacity: 0.9;
     }
     .notification {
       position: fixed;
       top: 20px;
       right: 20px;
-      background-color: var(--primary-color);
+      background-color: var(--accent-color);
       color: white;
       padding: 15px 20px;
       border-radius: 4px;
@@ -180,24 +200,22 @@
       height: 40px;
       border: 4px solid rgba(0, 0, 0, 0.1);
       border-radius: 50%;
-      border-top-color: var(--primary-color);
+      border-top-color: var(--accent-color);
       animation: spin 1s ease-in-out infinite;
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
 
-    /* ---------- "Page preview" container, sized like A4 ---------- */
+    /* "Page preview" container */
     .page-preview {
-      /* Approx. A4 at 96 dpi: 794px x 1123px */
-      width: 500px; /* Reduced from 794px */
-      height: 708px; /* Reduced proportionally from 1123px */
-      border: 1px solid #ccc;
+      width: 500px;
+      height: 708px;
       margin: 0 auto;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 0 4px rgba(0,0,0,0.2);
     }
+    
     /* Wrapper we can scale if puzzle is too large */
     .page-scale-wrapper {
       transform-origin: top left;
@@ -230,16 +248,18 @@
       display: flex;
       justify-content: center;
       margin-bottom: 20px;
-      width: 100%; /* Ensure full width */
+      width: 100%;
     }
     .crossword-grid {
       border-collapse: collapse;
       margin: 0 auto;
       margin-bottom: 20px;
-      border: 2px solid white;
     }
     .crossword-grid td {
       padding: 0;
+    }
+    .crossword-grid td:empty {
+      background-color: #f3f3f3;
     }
     .crossword-cell {
       width: var(--cell-size, 25px);
@@ -262,6 +282,7 @@
       text-align: left;
       font-weight: bold;
       font-size: 16px;
+      color: #444;
     }
     .clues-container {
       margin-top: 30px;
@@ -269,21 +290,22 @@
       flex-wrap: wrap;
       gap: 40px;
       text-align: left;
-      justify-content: space-between; /* Changed from center to space-between */
+      justify-content: space-between;
     }
     .across-clues, .down-clues {
       flex: 1;
       min-width: 250px;
-      max-width: 45%; /* Ensures neither column gets too wide */
+      max-width: 45%;
     }
     .clue-list {
       list-style-type: none;
       padding-left: 0;
     }
     .clue-item {
-      margin-bottom: 8px;
+      margin-bottom: 12px;
       font-size: 14px;
-      line-height: 1.4;
+      line-height: 1.5;
+      text-align: left;
     }
     
     /* Footer with copyright */
@@ -294,6 +316,13 @@
       font-size: 12px;
       color: #666;
       border-top: 1px solid var(--border-color);
+    }
+
+    /* Education.com logo styling */
+    .education-logo {
+      display: block;
+      text-align: right;
+      margin-top: 20px;
     }
 
     /* PRINT STYLES */
@@ -369,7 +398,8 @@
 <body>
   <div class="container">
     <header>
-      <h1>Crossword Puzzle Generator</h1>
+      <h1>Crossword Puzzle</h1>
+      <h2>Reading worksheet generator</h2>
     </header>
     <div class="content">
       <div class="input-section">
@@ -384,7 +414,7 @@
         <div>
           <label for="wordsList">Words</label>
           <textarea id="wordsList" class="word-input"
-            placeholder="Type or paste your list of words here"></textarea>
+            placeholder="Type or paste your list of words here. Format: term, definition (one per line)"></textarea>
         </div>
         
         <button class="create-btn" onclick="generateCrossword()">Create</button>
@@ -397,21 +427,43 @@
           <button class="preview-tab" onclick="showPreviewTab('answerKey')">ANSWER KEY</button>
         </div>
         
-        <!-- The "page preview" that mimics A4 size -->
+        <!-- The preview container -->
         <div class="page-preview">
           <!-- We'll scale the puzzle inside here if it's too large -->
           <div class="page-scale-wrapper" id="pageScaleWrapper">
             <div id="previewContent" class="preview-content">
               <div id="worksheetPreview">
-                <h3 class="preview-title" id="previewTitle">Crossword Puzzle</h3>
-                <div id="crosswordContainer">
-                  <p>Your puzzle will appear here after you create it.</p>
+                <div class="worksheet-container">
+                  <h3 class="preview-title" id="previewTitle">Crossword Puzzle</h3>
+                  <div id="crosswordContainer">
+                    <p>Your puzzle will appear here after you create it.</p>
+                  </div>
+                </div>
+                <div class="education-logo">
+                  <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIwIiBoZWlnaHQ9IjI1IiB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciPjxwYXRoIGQ9Ik02LjEzNyAxMy4zNjRjMCAzLjAwNSAyLjQzNiA1LjQ0MiA1LjQ0MiA1LjQ0MiAzLjAwNSAwIDUuNDQxLTIuNDM3IDUuNDQxLTUuNDQyIDAtMy4wMDYtMi40MzYtNS40NDItNS40NDEtNS40NDItMy4wMDYgMC01LjQ0MiAyLjQzNi01LjQ0MiA1LjQ0MnptMi42NDIuNDQySDkuNHYxLjY0MmgyLjE3OXYxLjMyMUgxNC4xVjE1LjQ0OGgxLjY0MlYxMy44MDVoLTIuNjIxdi0xLjMySDEwLjZ2MS4zMkg5LjQwMWwuMDAxLTEuMzJINy43Nzl2MS4zMnoiIGZpbGw9IiMwMGM2YmUiLz48cGF0aCBkPSJNMzguNDI4IDEwLjA0MmMtLjYzLS42MzQtMS4zODgtLjk1MS0yLjI3NC0uOTUxLS44ODEgMC0xLjYzNy4zMTgtMi4yNjguLzk1Ni0uNjMuNjM3LS45NDcgMS40MDQtLjk0NyAyLjMwMiAwIC44OTguMzE2IDEuNjY1Ljk0NyAyLjMwMi42MzEuNjM4IDEuMzg3Ljk1NiAyLjI2OC45NTYuODY4IDAgMS42MjMtLjMxOCAyLjI2My0uOTU2LjY0LS42MzcuOTYtMS40MDQuOTYtMi4zMDIgMC0uODk4LS4zMi0xLjY2NS0uOTYtMi4zMDJsLjAxMS0uMDA1em0tLjgyNiAzLjc1NGMtLjQwNi40MDYtLjg5NC42MS0xLjQ2LjYxLS41NyAwLTEuMDU5LS4yMDQtMS40NjUtLjYxLS40MDctLjQwNy0uNjExLS44OTgtLjYxMS0xLjQ3MiAwLS41NzUuMjA0LTEuMDY1LjYxLTEuNDcyLjQwNy0uNDA2Ljg5Ni0uNjEgMS40NjYtLjYxLjU2NyAwIDEuMDU0LjIwNCAxLjQ2LjYxLjQwOC40MDcuNjExLjg5Ny42MTEgMS40NzIgMCAuNTc0LS4yMDMgMS4wNjUtLjYxMSAxLjQ3MnptMzYuMTkzLTMuNzU0Yy0uNjMtLjYzNC0xLjM4Ny0uOTUxLTIuMjczLS45NTEtLjg4MiAwLTEuNjM4LjMxOC0yLjI2OC45NTYtLjYzMS42MzctLjk0NyAxLjQwNC0uOTQ3IDIuMzAyIDAgLjg5OC4zMTYgMS42NjUuOTQ3IDIuMzAyLjYzLjYzOCAxLjM4Ni45NTYgMi4yNjguOTU2Ljg2NyAwIDEuNjIyLS4zMTggMi4yNjItLjk1Ni42NC0uNjM3Ljk2LTEuNDA0Ljk2LTIuMzAyIDAtLjg5OC0uMzItMS42NjUtLjk2LTIuMzAybC4wMTEtLjAwNXptLS44MjUgMy43NTRjLS40MDYuNDA2LS44OTQuNjEtMS40Ni42MS0uNTcgMC0xLjA1OC0uMjA0LTEuNDY1LS42MS0uNDA3LS40MDctLjYxMS0uODk4LS42MTEtMS40NzIgMC0uNTc1LjIwNC0xLjA2NS42MTEtMS40NzIuNDA3LS40MDYuODk2LS42MSAxLjQ2NS0uNjEuNTY2IDAgMS4wNTQuMjA0IDEuNDYuNjEuNDA3LjQwNy42MTEuODk3LjYxMSAxLjQ3MiAwIC41NzQtLjIwNCAxLjA2NS0uNjExIDEuNDcyek0yNS43OTkgOC4zODRsLTIuMzUgNS44MDEtMi4zNzMtNS44MDFoLTEuNDYybC0yLjQxMyA1LjgwMS0yLjI2My01LjgwMWgtMS45MzFsMy4yMzIgOC4xNmgxLjY2MWwyLjM0OC01LjY5MyAyLjM0OCA1LjY5MmgxLjYxN2wzLjExLTguMTU5aC0xLjUyNHptMjIuMzY2IDMuMDAybDIuOTA3LTMuMDAxaC0xLjc2NmwtMi40NTggMi42MDdWOC4zODRoLTEuNTI0djguMTU5aDEuNTI0di0zLjQyOGwyLjYzNyAzLjQyOGgxLjgzMWwtMy4xNTEtNC4xMnptMjkuMzAzLTMuMDRoLTEuNTM4djEuODhoLTEuMDg2djEuMTg2aDEuMDg2djUuMTMzaDEuNTM4VjExLjQxM2gxLjg2MnYtMS4xODdINzcuNDd2LTEuODh6bTUuMzgtLjAyNWMtMS41MjQgMC0yLjcxNi40NzItMy41MjYgMS40MjlsMS4wMyAxLjA0Yy41MzQtLjY1MiAxLjI3OS0uOTc3IDIuMjMzLS45NzcuNDc4IDAgLjg2NS4xMjcgMS4xNjEuMzg1LjMuMjYuNDQyLjYxLjQyNiAxLjA1MWgtMS42ODhjLTEuMTMzIDAtMi4wMS4yNjMtMi42MjYuNzkzLS42MTcuNTI5LS45MjIgMS4yNDQtLjkyMiAyLjE0N2EyLjQ3IDIuNDcgMCAwIDAgLjc4NCAxLjg1M2MuNTI0LjQ5NyAxLjE5NS43NDYgMi4wMi43NDYuODAyIDAgMS4zOTctLjM0OCAxLjc4OC0xLjA0M2wuMTI2LS4wMDFoLjI2MnYuODM4aDEuNDMzdi01LjE5NGMwLS45NTYtLjI5My0xLjY5My0uODc4LTIuMjE4LS41ODQtLjUyNS0xLjM4Mi0uNzg5LTIuMzkzLS43ODl2LS4wMDV6bS43ODcgNC4zNTJ2LjQyYzAgLjQ5OS0uMTY4LjkwMy0uNTA0IDEuMjEzLS4zMzcuMzEtLjc2NC40NjctMS4yOC40NjctLjMzNiAwLS42MTEtLjA5Mi0uODIzLS4yNzYtLjIxMy0uMTg0LS4zMi0uNDI4LS4zMi0uNzM1IDAtLjMyMy4xMzctLjU4Ny40MS0uNzg5LjI3My0uMi42NDYtLjMuMS0uMyAxLjA3IDB6TTQ5LjQ5IDkuMjZjLS42NS0uNjE1LTEuNTQzLS45MzItMi42ODYtLjk0OWwtLjAwOC4wMDZoLTIuNjl2OC4yMjZoMS41MzZWMTMuNDNoMS4xNTRjMS4xNDMtLjAxNyAyLjAzNi0uMzM0IDIuNjg2LS45NDkuNjQtLjYxLjk2Mi0xLjQxMi45NjItMi40MDQgMC0uOTkzLS4zMjItMS43OTUtLjk2Ny0yLjQwOWwuMDEzLS40MDd6bS0xLjA3MSAzLjc0OGMtLjM1Mi4zNTItLjg0NC41MjgtMS40NzYuNTI4aC0xLjMwMlY5Ljc0MWgxLjMwMWMuNjMzIDAgMS4xMjQuMTc2IDEuNDc3LjUyOC4zNTIuMzUyLjUyOC44MzIuNTI4IDEuNDQgMCAuNjA3LS4xNzYgMS4wODctLjUyOCAxLjQ0em0yNi41NzItNC42MjRoLTEuNTM4djguMTU5aDUuMTg2di0xLjNINzUuMDV2LTYuODU5aC0uMDU4em0yOS4xNjUgMGgtMS41Mzh2OC4xNTloNS4xODZ2LTEuM2gtMy42NDl2LTYuODU5aC0uMDY5bC4wNyAwek05Mi43MDYgOS4yNmMtLjY1LS42MTUtMS41NDMtLjkzMi0yLjY4Ni0uOTQ5bC0uMDA5LjAwNmgtMi42OXY4LjIyNmgxLjUzN1YxMy40M2gxLjE1M2MxLjE0My0uMDE3IDIuMDM2LS4zMzQgMi42ODYtLjk0OS42NC0uNjEuOTYzLTEuNDEyLjk2My0yLjQwNCAwLS45OTMtLjMyMy0xLjc5NS0uOTY4LTIuNDA5bC4wMTQtLjQwN3ptLTEuMDcxIDMuNzQ4Yy0uMzUyLjM1Mi0uODQ1LjUyOC0xLjQ3Ny41MjhoLTEuM1Y5Ljc0MWgxLjNjLjYzMyAwIDEuMTI1LjE3NiAxLjQ3Ny41MjguMzUyLjM1Mi41MjguODMyLjUyOCAxLjQ0IDAgLjYwNy0uMTc2IDEuMDg3LS41MjggMS40NHptNi4xNS01LjY4N2MuMzc2IDAgLjY4My0uMzA2LjY4My0uNjgycy0uMzA2LS42ODItLjY4My0uNjgyYy0uMzc2IDAtLjY4Mi4zMDYtLjY4Mi42ODJzLjMwNi42ODIuNjgyLjY4MnptLS43NjkgMS45MzhoMS41Mzl2OC4xNTlINDcuMDMyTDk3LjAxNiA5LjI2em0xOC4yMzQtLjE3M2MtLjY1LS42MTUtMS41NDItLjkzMi0yLjY4NS0uOTQ5bC0uMDA4LjAwNmgtMi42OXY4LjIyNmgxLjUzN1YxMy40M2gxLjE1M2MxLjE0My0uMDE3IDIuMDM2LS4zMzQgMi42ODUtLjk0OS42NC0uNjEuOTYzLTEuNDEyLjk2My0yLjQwNCAwLS45OTMtLjMyMi0xLjc5NS0uOTY3LTIuNDA5bC4wMTItLjQwN3ptLTEuMDcgMy43NDhjLS4zNTIuMzUyLS44NDUuNTI4LTEuNDc3LjUyOGgtMS4zVjkuNzQxaDEuM2MuNjMzIDAgMS4xMjUuMTc2IDEuNDc3LjUyOC4zNTIuMzUyLjUyOC44MzIuNTI4IDEuNDQgMCAuNjA3LS4xNzYgMS4wODctLjUyOCAxLjQ0em03LjQ0Mi00LjQ1MmwtMi4zNSA1LjgwMS0yLjM3My01LjgwMWgtMS40NjJsLTIuNDEzIDUuODAxLTIuMjY0LTUuODAxaC0xLjkzbDMuMjMyIDguMTZoMS42NmwyLjM0OC01LjY5MyAyLjM0OSA1LjY5MmgxLjYxN2wzLjExLTguMTU5aC0xLjUyM3ptLTMyLjA4MS01LjI4YS43MjIuNzIyIDAgMCAwLS43MjItLjcyMy43M
+<div class="education-logo">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="120" height="25" viewBox="0 0 120 25" fill="none">
+                    <path d="M6.137 13.364c0 3.005 2.436 5.442 5.442 5.442 3.005 0 5.441-2.437 5.441-5.442 0-3.006-2.436-5.442-5.441-5.442-3.006 0-5.442 2.436-5.442 5.442zm2.642.442H9.4v1.642h2.179v1.321H14.1V15.448h1.642V13.805h-2.621v-1.32H10.6v1.32H9.401l.001-1.32H7.779v1.32z" fill="#00c6be"/>
+                    <path d="M38.428 10.042c-.63-.634-1.388-.951-2.274-.951-.881 0-1.637.318-2.268.956-.63.637-.947 1.404-.947 2.302 0 .898.316 1.665.947 2.302.631.638 1.387.956 2.268.956.868 0 1.623-.318 2.263-.956.64-.637.96-1.404.96-2.302 0-.898-.32-1.665-.96-2.302l.011-.005zm-.826 3.754c-.406.406-.894.61-1.46.61-.57 0-1.059-.204-1.465-.61-.407-.407-.611-.898-.611-1.472 0-.575.204-1.065.61-1.472.407-.406.896-.61 1.466-.61.567 0 1.054.204 1.46.61.408.407.611.897.611 1.472 0 .574-.203 1.065-.611 1.472zm36.193-3.754c-.63-.634-1.387-.951-2.273-.951-.882 0-1.638.318-2.268.956-.631.637-.947 1.404-.947 2.302 0 .898.316 1.665.947 2.302.63.638 1.386.956 2.268.956.867 0 1.622-.318 2.262-.956.64-.637.96-1.404.96-2.302 0-.898-.32-1.665-.96-2.302l.011-.005zm-.825 3.754c-.406.406-.894.61-1.46.61-.57 0-1.058-.204-1.465-.61-.407-.407-.611-.898-.611-1.472 0-.575.204-1.065.611-1.472.407-.406.896-.61 1.465-.61.566 0 1.054.204 1.46.61.407.407.611.897.611 1.472 0 .574-.204 1.065-.611 1.472z" fill="#00c6be"/>
+                    <path d="M25.799 8.384l-2.35 5.801-2.373-5.801h-1.462l-2.413 5.801-2.263-5.801h-1.931l3.232 8.16h1.661l2.348-5.693 2.348 5.692h1.617l3.11-8.159h-1.524zm22.366 3.002l2.907-3.001h-1.766l-2.458 2.607V8.384h-1.524v8.159h1.524v-3.428l2.637 3.428h1.831l-3.151-4.12zm29.303-3.04h-1.538v1.88h-1.086v1.186h1.086v5.133h1.538V11.413h1.862v-1.187H77.47v-1.88zm5.38-.025c-1.524 0-2.716.472-3.526 1.429l1.03 1.04c.534-.652 1.279-.977 2.233-.977.478 0 .865.127 1.161.385.3.26.442.61.426 1.051h-1.688c-1.133 0-2.01.263-2.626.793-.617.529-.922 1.244-.922 2.147a2.47 2.47 0 0 0 .784 1.853c.524.497 1.195.746 2.02.746.802 0 1.397-.348 1.788-1.043l.126-.001h.262v.838h1.433v-5.194c0-.956-.293-1.693-.878-2.218-.584-.525-1.382-.789-2.393-.789v-.005zm.787 4.352v.42c0 .499-.168.903-.504 1.213-.337.31-.764.467-1.28.467-.336 0-.611-.092-.823-.276-.213-.184-.32-.428-.32-.735 0-.323.137-.587.41-.789.273-.2.646-.3.1-.3 1.07 0 .417 0 .417 0zm-33.647-4.413c-.65-.615-1.543-.932-2.686-.949l-.008.006h-2.69v8.226h1.536V13.43h1.154c1.143-.017 2.036-.334 2.686-.949.64-.61.962-1.412.962-2.404 0-.993-.322-1.795-.967-2.409l.013-.407zm-1.071 3.748c-.352.352-.844.528-1.476.528h-1.302V9.741h1.301c.633 0 1.124.176 1.477.528.352.352.528.832.528 1.44 0 .607-.176 1.087-.528 1.44zm26.572-4.624h-1.538v8.159h5.186v-1.3H75.05V8.384h-.058zm29.165 0h-1.538v8.159h5.186v-1.3h-3.649V8.384h-.069l.07 0zm-9.629.876c-.65-.615-1.543-.932-2.686-.949l-.009.006h-2.69v8.226h1.537V13.43h1.153c1.143-.017 2.036-.334 2.686-.949.64-.61.963-1.412.963-2.404 0-.993-.323-1.795-.968-2.409l.014-.407zm-1.071 3.748c-.352.352-.845.528-1.477.528h-1.3V9.741h1.3c.633 0 1.125.176 1.477.528.352.352.528.832.528 1.44 0 .607-.176 1.087-.528 1.44zm6.15-5.687c.376 0 .683-.306.683-.682s-.306-.682-.683-.682c-.376 0-.682.306-.682.682s.306.682.682.682zm-.769 1.938h1.539v8.159h-1.539z" fill="#00c6be"/>
+                    <path d="M115.25 9.087c-.65-.615-1.542-.932-2.685-.949l-.008.006h-2.69v8.226h1.537V13.43h1.153c1.143-.017 2.036-.334 2.685-.949.64-.61.963-1.412.963-2.404 0-.993-.322-1.795-.967-2.409l.012-.407zm-1.07 3.748c-.352.352-.845.528-1.477.528h-1.3V9.741h1.3c.633 0 1.125.176 1.477.528.352.352.528.832.528 1.44 0 .607-.176 1.087-.528 1.44z" fill="#00c6be"/>
+                  </svg>
                 </div>
               </div>
               <div id="answerKeyPreview" style="display: none;">
-                <h3 class="preview-title" id="answerKeyTitle">Crossword Puzzle</h3>
-                <div id="answerKeyContainer">
-                  <p>Your answer key will appear here after you create it.</p>
+                <div class="worksheet-container">
+                  <h3 class="preview-title" id="answerKeyTitle">Crossword Puzzle</h3>
+                  <div id="answerKeyContainer">
+                    <p>Your answer key will appear here after you create it.</p>
+                  </div>
+                </div>
+                <div class="education-logo">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="120" height="25" viewBox="0 0 120 25" fill="none">
+                    <path d="M6.137 13.364c0 3.005 2.436 5.442 5.442 5.442 3.005 0 5.441-2.437 5.441-5.442 0-3.006-2.436-5.442-5.441-5.442-3.006 0-5.442 2.436-5.442 5.442zm2.642.442H9.4v1.642h2.179v1.321H14.1V15.448h1.642V13.805h-2.621v-1.32H10.6v1.32H9.401l.001-1.32H7.779v1.32z" fill="#00c6be"/>
+                    <path d="M38.428 10.042c-.63-.634-1.388-.951-2.274-.951-.881 0-1.637.318-2.268.956-.63.637-.947 1.404-.947 2.302 0 .898.316 1.665.947 2.302.631.638 1.387.956 2.268.956.868 0 1.623-.318 2.263-.956.64-.637.96-1.404.96-2.302 0-.898-.32-1.665-.96-2.302l.011-.005zm-.826 3.754c-.406.406-.894.61-1.46.61-.57 0-1.059-.204-1.465-.61-.407-.407-.611-.898-.611-1.472 0-.575.204-1.065.61-1.472.407-.406.896-.61 1.466-.61.567 0 1.054.204 1.46.61.408.407.611.897.611 1.472 0 .574-.203 1.065-.611 1.472zm36.193-3.754c-.63-.634-1.387-.951-2.273-.951-.882 0-1.638.318-2.268.956-.631.637-.947 1.404-.947 2.302 0 .898.316 1.665.947 2.302.63.638 1.386.956 2.268.956.867 0 1.622-.318 2.262-.956.64-.637.96-1.404.96-2.302 0-.898-.32-1.665-.96-2.302l.011-.005zm-.825 3.754c-.406.406-.894.61-1.46.61-.57 0-1.058-.204-1.465-.61-.407-.407-.611-.898-.611-1.472 0-.575.204-1.065.611-1.472.407-.406.896-.61 1.465-.61.566 0 1.054.204 1.46.61.407.407.611.897.611 1.472 0 .574-.204 1.065-.611 1.472z" fill="#00c6be"/>
+                    <path d="M25.799 8.384l-2.35 5.801-2.373-5.801h-1.462l-2.413 5.801-2.263-5.801h-1.931l3.232 8.16h1.661l2.348-5.693 2.348 5.692h1.617l3.11-8.159h-1.524zm22.366 3.002l2.907-3.001h-1.766l-2.458 2.607V8.384h-1.524v8.159h1.524v-3.428l2.637 3.428h1.831l-3.151-4.12zm29.303-3.04h-1.538v1.88h-1.086v1.186h1.086v5.133h1.538V11.413h1.862v-1.187H77.47v-1.88zm5.38-.025c-1.524 0-2.716.472-3.526 1.429l1.03 1.04c.534-.652 1.279-.977 2.233-.977.478 0 .865.127 1.161.385.3.26.442.61.426 1.051h-1.688c-1.133 0-2.01.263-2.626.793-.617.529-.922 1.244-.922 2.147a2.47 2.47 0 0 0 .784 1.853c.524.497 1.195.746 2.02.746.802 0 1.397-.348 1.788-1.043l.126-.001h.262v.838h1.433v-5.194c0-.956-.293-1.693-.878-2.218-.584-.525-1.382-.789-2.393-.789v-.005zm.787 4.352v.42c0 .499-.168.903-.504 1.213-.337.31-.764.467-1.28.467-.336 0-.611-.092-.823-.276-.213-.184-.32-.428-.32-.735 0-.323.137-.587.41-.789.273-.2.646-.3.1-.3 1.07 0 .417 0 .417 0zm-33.647-4.413c-.65-.615-1.543-.932-2.686-.949l-.008.006h-2.69v8.226h1.536V13.43h1.154c1.143-.017 2.036-.334 2.686-.949.64-.61.962-1.412.962-2.404 0-.993-.322-1.795-.967-2.409l.013-.407zm-1.071 3.748c-.352.352-.844.528-1.476.528h-1.302V9.741h1.301c.633 0 1.124.176 1.477.528.352.352.528.832.528 1.44 0 .607-.176 1.087-.528 1.44zm26.572-4.624h-1.538v8.159h5.186v-1.3H75.05V8.384h-.058zm29.165 0h-1.538v8.159h5.186v-1.3h-3.649V8.384h-.069l.07 0zm-9.629.876c-.65-.615-1.543-.932-2.686-.949l-.009.006h-2.69v8.226h1.537V13.43h1.153c1.143-.017 2.036-.334 2.686-.949.64-.61.963-1.412.963-2.404 0-.993-.323-1.795-.968-2.409l.014-.407zm-1.071 3.748c-.352.352-.845.528-1.477.528h-1.3V9.741h1.3c.633 0 1.125.176 1.477.528.352.352.528.832.528 1.44 0 .607-.176 1.087-.528 1.44zm6.15-5.687c.376 0 .683-.306.683-.682s-.306-.682-.683-.682c-.376 0-.682.306-.682.682s.306.682.682.682zm-.769 1.938h1.539v8.159h-1.539z" fill="#00c6be"/>
+                    <path d="M115.25 9.087c-.65-.615-1.542-.932-2.685-.949l-.008.006h-2.69v8.226h1.537V13.43h1.153c1.143-.017 2.036-.334 2.685-.949.64-.61.963-1.412.963-2.404 0-.993-.322-1.795-.967-2.409l.012-.407zm-1.07 3.748c-.352.352-.845.528-1.477.528h-1.3V9.741h1.3c.633 0 1.125.176 1.477.528.352.352.528.832.528 1.44 0 .607-.176 1.087-.528 1.44z" fill="#00c6be"/>
+                  </svg>
                 </div>
               </div>
             </div>
@@ -465,13 +517,23 @@
       const wordsList = document.getElementById('wordsList');
       if (!wordsList.value) {
         wordsList.placeholder = 
-`fire, flames that burn and can cause damage
-fire fighter, a person whose job is to put out fires
-smoke, the gray or black cloud that comes from a fire
+`to burn, to be on fire or to cause something to be on fire
 burn, an injury caused by fire or heat
 to save, to stop something from being damaged or destroyed
+to scream, to make a loud, high sound because of fear or pain
+to shout, to speak very loudly
 to rescue, to save someone from danger
-to survive, to continue to live after a dangerous situation`;
+to survive, to continue to live after dangerous situation
+alarm, a device that makes a loud noise to warn of danger
+embers, glowing remnants of a dying fire
+ignite, to catch fire or to set something alight
+extinguisher, a device used to put out fires
+rescue team, a group of people trained to save others in emergencies
+soot, a black, powdery substance produced by fire
+hazard, a danger or risk that has the potential to cause harm
+evacuation, the process of moving people away from danger to safety
+caution, careful behavior to avoid danger or mistakes
+emergency, a sudden, urgent situation requiring immediate action`;
       }
     };
 
@@ -630,8 +692,8 @@ to survive, to continue to live after a dangerous situation`;
       // Fallback to original algorithm if no good layout was found
       return generateOriginalLayout(words);
     }
-    
-    // IMPROVEMENT 3: Score a layout based on multiple factors
+
+// IMPROVEMENT 3: Score a layout based on multiple factors
     function scoreLayout(layout) {
       // Count across and down words
       let acrossCount = 0;
@@ -689,6 +751,23 @@ to survive, to continue to live after a dangerous situation`;
     }
     
     // Generate a layout with the given words
+    function generateLayout(words, attemptNumber) {
+      const gridSize = calculateGridSize(words);
+      const grid = createEmptyGrid(gridSize);
+      const placedWords = [];
+      
+      // IMPROVEMENT 2 & 4: Track direction balance and vary first word orientation
+      let acrossCount = 0;
+      let downCount = 0;
+      
+      // Alternate between horizontal and vertical for the first word
+      const firstWordHorizontal = attemptNumber % 2 === 0;
+      
+      // Place first word
+      const firstWord = words[0];
+      const startX = Math.floor((gridSize - firstWord.word.length) / 2
+
+// Generate a layout with the given words
     function generateLayout(words, attemptNumber) {
       const gridSize = calculateGridSize(words);
       const grid = createEmptyGrid(gridSize);
@@ -804,7 +883,7 @@ to survive, to continue to live after a dangerous situation`;
       };
     }
     
-// Find all possible placements for a word
+    // Find all possible placements for a word
     function findPossiblePlacements(grid, currentWord, placedWords, preferHorizontal) {
       const possiblePlacements = [];
       
