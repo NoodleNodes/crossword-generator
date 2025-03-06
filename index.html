@@ -251,11 +251,11 @@
       padding: 0;
     }
     .crossword-cell {
-      width: var(--cell-size, 25px);
-      height: var(--cell-size, 25px);
+      width: var(--cell-size, 20px);
+      height: var(--cell-size, 20px);
       border: 1px solid #333;
       text-align: center;
-      font-size: 16px;
+      font-size: 14px;
       position: relative;
       background-color: white;
     }
@@ -273,17 +273,17 @@
       font-size: 16px;
     }
     .clues-container {
-      margin-top: 30px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 40px;
-      text-align: left;
-      justify-content: center;
-    }
-    .across-clues, .down-clues {
-      flex: 1;
-      min-width: 250px;
-    }
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  justify-content: space-between;
+  column-gap: 2rem; /* optional */
+}
+.across-clues, .down-clues {
+  width: 45%;
+  /* or flex: 1; if you prefer auto sizing */
+}
+
     .clue-list {
       list-style-type: none;
       padding-left: 0;
@@ -372,6 +372,11 @@
       .pdf-export-container .preview-title {
         font-size: 16pt;
         margin-bottom: 8mm;
+      }
+      .clues-container {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
       }
     }
   </style>
