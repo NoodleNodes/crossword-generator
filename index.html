@@ -68,15 +68,22 @@
       margin-bottom: 20px;
       font-size: 16px;
     }
+    .input-label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: bold;
+      color: var(--dark-gray);
+    }
     .word-input {
       width: 100%;
       height: 350px; /* Increased height for more breathing room */
-      padding: 10px;
+      padding: 15px; /* Increased from 10px */
       border: 1px solid var(--border-color);
       border-radius: 4px;
       resize: vertical;
-      font-size: 14px;
+      font-size: 15px; /* Increased from 14px */
       font-family: monospace;
+      line-height: 1.6; /* Added line height for better spacing */
     }
     .create-btn {
       background-color: var(--secondary-color);
@@ -88,6 +95,7 @@
       font-size: 16px;
       margin-top: 20px;
       float: right;
+      transition: background-color 0.2s;
     }
     .create-btn:hover {
       background-color: #005F6B;
@@ -117,8 +125,9 @@
     }
     .preview-title {
       margin-bottom: 25px;
-      font-size: 20px;
+      font-size: 22px; /* Increased from 20px */
       font-weight: bold;
+      color: var(--primary-color);
     }
     .download-section {
       margin-top: 20px;
@@ -137,6 +146,7 @@
       width: 100%;
       text-align: center;
       font-size: 14px;
+      transition: background-color 0.2s;
     }
     .download-btn svg {
       margin-right: 5px;
@@ -152,10 +162,11 @@
       color: white;
       padding: 15px 20px;
       border-radius: 4px;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Improved shadow */
       transform: translateX(200%);
       transition: transform 0.3s ease-in-out;
       z-index: 1000;
+      font-weight: bold;
     }
     .notification.show {
       transform: translateX(0);
@@ -204,6 +215,7 @@
       top: 0;
       width: auto;
       height: auto;
+      transition: transform 0.3s ease-out;
     }
     
     /* For PDF export - we'll hide this normally */
@@ -233,10 +245,13 @@
       border-collapse: collapse;
       margin: 0 auto;
       margin-bottom: 20px;
-      border: 2px solid white;
+      border: 2px solid #333; /* Make outer border more prominent */
     }
     .crossword-grid td {
       padding: 0;
+    }
+    .crossword-grid td:empty {
+      background-color: #f3f3f3;
     }
     .crossword-cell {
       width: var(--cell-size, 25px);
@@ -266,20 +281,23 @@
       flex-wrap: wrap;
       gap: 40px;
       text-align: left;
-      justify-content: center;
+      justify-content: space-between; /* Changed from center to space-between */
+      max-width: 100%;
     }
     .across-clues, .down-clues {
       flex: 1;
       min-width: 250px;
+      max-width: 45%; /* Ensures neither column gets too wide */
     }
     .clue-list {
       list-style-type: none;
       padding-left: 0;
     }
     .clue-item {
-      margin-bottom: 8px;
+      margin-bottom: 12px; /* Increased from 8px to give more vertical breathing room */
       font-size: 14px;
-      line-height: 1.4;
+      line-height: 1.5; /* Increased from 1.4 for better readability */
+      text-align: left;
     }
     
     /* Footer with copyright */
@@ -335,18 +353,21 @@
         font-size: 6pt;
       }
       .pdf-export-container .clues-container {
-        display: block !important;
-        column-count: 2;
-        column-gap: 5mm;
-        width: 100%;
-        margin-top: 5mm !important;
+        display: flex !important;
+        flex-direction: row !important;
+        column-count: 1 !important; /* Overriding the column-count property */
+        justify-content: space-between !important;
         page-break-before: avoid !important;
         page-break-inside: avoid !important;
         break-inside: avoid !important;
+        gap: 20px !important;
       }
       
       .pdf-export-container .across-clues,
       .pdf-export-container .down-clues {
+        flex: 1 !important;
+        width: 48% !important; /* Each takes roughly half width */
+        min-width: 0 !important; /* Allow to shrink if needed */
         display: block !important;
         break-inside: avoid !important;
         page-break-inside: avoid !important;
@@ -358,6 +379,13 @@
       .pdf-export-container .preview-title {
         font-size: 16pt;
         margin-bottom: 8mm;
+      }
+      .pdf-export-container .clue-item {
+        margin-bottom: 8px !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+        line-height: 1.4 !important;
+        font-size: 11pt !important;
       }
     }
   </style>
@@ -373,14 +401,18 @@
         <p class="help-text">See instructions below. Under 20 words is best for a single page.</p>
         
         <div>
-          <label for="puzzleTitle">Title</label>
+          <label for="puzzleTitle" class="input-label">Title</label>
           <input type="text" id="puzzleTitle" class="title-input" value="Crossword Puzzle">
         </div>
         
         <div>
-          <label for="wordsList">Words</label>
+          <label for="wordsList" class="input-label">Words and Definitions</label>
+          <p class="help-text">Enter each word and its definition on a new line in the format: "word, definition"</p>
           <textarea id="wordsList" class="word-input"
-            placeholder="Type or paste your list of words here"></textarea>
+            placeholder="Example:
+fire, flames that burn and can cause damage
+smoke, the gray or black cloud that comes from a fire
+rescue, to save someone from danger"></textarea>
         </div>
         
         <button class="create-btn" onclick="generateCrossword()">Create</button>
@@ -510,6 +542,7 @@ to survive, to continue to live after a dangerous situation`;
       const scaleWrapper = document.getElementById('pageScaleWrapper');
       // reset scale so we measure "actual" size
       scaleWrapper.style.transform = 'scale(1)';
+      scaleWrapper.style.transformOrigin = 'top left';
 
       const maxW = previewWrapper.clientWidth;
       const maxH = previewWrapper.clientHeight;
@@ -521,8 +554,17 @@ to survive, to continue to live after a dangerous situation`;
         const scaleW = maxW / contentW;
         const scaleH = maxH / contentH;
         scale = Math.min(scaleW, scaleH, 1);
+        
+        // Apply a minimum scale to prevent tiny previews
+        scale = Math.max(scale, 0.4);
       }
+      
+      // Add smooth transition for scaling
+      scaleWrapper.style.transition = 'transform 0.3s ease-out';
       scaleWrapper.style.transform = `scale(${scale})`;
+      
+      // Ensure the wrapper has enough space
+      previewWrapper.style.minHeight = Math.min(contentH * scale, maxH) + 'px';
     }
 
     // Parse user input
@@ -1309,13 +1351,13 @@ to survive, to continue to live after a dangerous situation`;
       // Ensure all content is visible
       const cluesContainer = content.querySelector('.clues-container');
       if (cluesContainer) {
-        cluesContainer.style.display = 'block';
+        cluesContainer.style.display = 'flex';
         cluesContainer.style.visibility = 'visible';
         cluesContainer.style.height = 'auto';
       }
       
       const options = {
-        margin: [10, 10, 10, 10],
+        margin: [15, 15, 15, 15], // Slightly increased margins for better spacing
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
@@ -1324,14 +1366,25 @@ to survive, to continue to live after a dangerous situation`;
           scrollY: 0,
           windowHeight: 2000, // Ensure there's enough height to capture everything
           onclone: function(doc) {
-            // Force visibility of clues in PDF
+            // Force visibility and proper layout of clues in PDF
             const cluesContainer = doc.querySelector('.pdf-export-container .clues-container');
             if (cluesContainer) {
-              cluesContainer.style.display = 'block';
+              cluesContainer.style.display = 'flex';
               cluesContainer.style.visibility = 'visible';
               cluesContainer.style.position = 'static';
               cluesContainer.style.overflow = 'visible';
               cluesContainer.style.height = 'auto';
+              
+              // Ensure across and down sections are side by side
+              const acrossClues = doc.querySelector('.pdf-export-container .across-clues');
+              const downClues = doc.querySelector('.pdf-export-container .down-clues');
+              
+              if (acrossClues && downClues) {
+                acrossClues.style.width = '48%';
+                downClues.style.width = '48%';
+                acrossClues.style.float = 'left';
+                downClues.style.float = 'right';
+              }
             }
           }
         },
@@ -1383,13 +1436,13 @@ to survive, to continue to live after a dangerous situation`;
       // Ensure all content is visible
       const cluesContainer = content.querySelector('.clues-container');
       if (cluesContainer) {
-        cluesContainer.style.display = 'block';
+        cluesContainer.style.display = 'flex';
         cluesContainer.style.visibility = 'visible';
         cluesContainer.style.height = 'auto';
       }
       
       const options = {
-        margin: [10, 10, 10, 10],
+        margin: [15, 15, 15, 15], // Increased margins for better spacing
         filename: filename,
         image: { type: 'jpeg', quality: 0.98 },
         html2canvas: {
@@ -1398,14 +1451,25 @@ to survive, to continue to live after a dangerous situation`;
           scrollY: 0,
           windowHeight: 2000, // Ensure there's enough height to capture everything
           onclone: function(doc) {
-            // Force visibility of clues in PDF
+            // Force visibility and proper layout of clues in PDF
             const cluesContainer = doc.querySelector('.pdf-export-container .clues-container');
             if (cluesContainer) {
-              cluesContainer.style.display = 'block';
+              cluesContainer.style.display = 'flex';
               cluesContainer.style.visibility = 'visible';
               cluesContainer.style.position = 'static';
               cluesContainer.style.overflow = 'visible';
               cluesContainer.style.height = 'auto';
+              
+              // Ensure across and down sections are side by side
+              const acrossClues = doc.querySelector('.pdf-export-container .across-clues');
+              const downClues = doc.querySelector('.pdf-export-container .down-clues');
+              
+              if (acrossClues && downClues) {
+                acrossClues.style.width = '48%';
+                downClues.style.width = '48%';
+                acrossClues.style.float = 'left';
+                downClues.style.float = 'right';
+              }
             }
           }
         },
